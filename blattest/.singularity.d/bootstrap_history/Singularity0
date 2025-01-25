@@ -1,0 +1,5 @@
+Bootstrap: docker
+From: ubuntu:jammy
+
+%runscript
+    /bin/bash "$@"

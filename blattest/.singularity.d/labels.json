@@ -1,0 +1,8 @@
+{
+	"org.label-schema.build-arch": "amd64",
+	"org.label-schema.build-date": "Friday_24_January_2025_17:33:55_PST",
+	"org.label-schema.schema-version": "1.0",
+	"org.label-schema.usage.singularity.deffile.bootstrap": "library",
+	"org.label-schema.usage.singularity.deffile.from": "ubuntu",
+	"org.label-schema.usage.singularity.version": "4.2.2"
+}
