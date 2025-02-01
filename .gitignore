@@ -172,3 +172,7 @@ cython_debug/
 
 # Singularity build files
 *.sif
+sifs/
+
+# Ignore all softlinks
+*.ln
