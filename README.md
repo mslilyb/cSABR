@@ -24,7 +24,7 @@ If not:
 singularity build --fakeroot desired_title_for_image.sif /path/to/definition/file.def
 ```
 
-For more details on definition files, including on how to make one, see the [official Singularity Documentation.](https://docs.sylabs.io/guides/latest/user-guide/definition_files.html).
+For more details on definition files, including on how to make one, see the [official Singularity Documentation](https://docs.sylabs.io/guides/latest/user-guide/definition_files.html).
 
 ## Running a Singularity Image
 
@@ -41,7 +41,7 @@ As you can see, other than invoking the image, the rest of the command is the sa
 
 ### Binding Host System Directories.
 
-Binding a directory allows your singularity container to read and write in a specific directory, essentially treating it as part of the container. Binding is enabled using the `--bind` or `-B` flags. The format of the argument is `/host:/container`, where `/host` is the desired directory on the host system, and `/container` is some path in the container. This path doesn't need to exist already. Convention is to use `/mnt` as the container directory.
+Binding a directory allows your singularity container to read and write in a specific directory, essentially treating it as part of the container. Binding is enabled using the `--bind` or `-B` flags. The format of the argument is `/host:/container`, where `/host` is the absolute path to the desired directory on the host system, and `/container` is some path in the container. This path doesn't need to exist already. Convention is to use `/mnt` as the container directory.
 
 ```bash
 singularity run --bind /path/to/hostdir:/mnt your_container_image.sif <normal CLI for alignment program here>
@@ -74,3 +74,4 @@ pip install spython
 	- compile on ARM, conda vs. container vs. x86 etc etc.
 
 - develop deffiles for all other alignment programs.
+- `run-aligner.py` needs a way to pass in host bind directories if I'm automating containers. Add argparse? Alter bakeoff too? Could just bind `bakeoff` location, but not certain that's wise.
