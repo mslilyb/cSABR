@@ -1,0 +1,100 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Cwd;
+use Getopt::Std;
+our ($opt_a, $opt_d, $opt_f, $opt_h, $opt_m, $opt_p, $opt_s, $opt_t);
+our ($CPU, $OS, $TIME, $MD5);
+getopts('adfhmp:s:t');
+
+# Environment
+
+my $info = `conda info`;
+die "ERROR: conda not installed\n" if $!;
+my ($active) = $info =~ /active environment : (\S+)/;
+if ($active =~ /sabr-(\w+)\-(\w+)/) {($OS, $CPU) = ($1, $2)}
+else {die "ERROR: you must activate a sabr environment\n"}
+
+if ($OS eq 'linux') {
+	$TIME = '/usr/bin/time -v';
+	$MD5 = 'md5sum';
+} elsif ($OS eq 'osx') {
+	$TIME = '/usr/bin/time -l';
+	$MD5 = 'md5';
+} else {
+	die "ERROR: unexpected OS: $OS";
+}
+
+# CLI
+
+my $usage = "
+Spliced Alignment Bakeoff Runner ($CPU-$OS)
+
+usage: $0 [options] <DNA> <FTX> <DIR> [<PROGRAMS...>]
+options:
+  -d        debugging: keep temp files
+  -f        force overwrite if files already exist (normally skipped)
+  -m        perform md5 checksums on data and *.ftx.gz files
+  -p <int>  processors [1]
+  -s <int>  random seed [unset]
+  -t        testing mode (sampling: 10% genes, 10% reads)
+
+DNA: path to FASTA file of reference sequence
+FTX: path to FTX file of reference annotation
+DIR: output directory
+
+examples:
+  ./bakeoff -ts1 data/ce01.* build blat star
+  ./bakeoff -fmts1 data/ce01.* build blat star > example.log 2>&1
+";
+die $usage unless @ARGV >= 3;
+die $usage if $opt_h;
+my ($src_dna, $src_ftx, $dir, @program) = @ARGV;
+
+# Setup
+
+my $BASE = getcwd();
+my $dna = "genome.fa";
+my $ftx = "genome.ftx";
+my $rna = "reads.fa.gz";
+my $readsim = "python3 $BASE/src/read-simulator.py --double";
+my $runalign = "python3 $BASE/src/run-aligner.py";
+if (not -d $dir or $opt_f) {
+	`mkdir -p $dir`;
+	if ($src_dna =~ /.gz$/) {`gunzip -c $src_dna > $dir/$dna`}
+	else                    {`cp $src_dna $dir/$dna`}
+	if ($src_ftx =~ /.gz$/) {`gunzip -c $src_ftx > $dir/$ftx`}
+	else                    {`cp $src_ftx $dir/$ftx`}
+	my $cli = "$readsim $dir/$dna $dir/$ftx";
+	if ($opt_t) {$cli .= " --samplegenes 0.1 --samplereads 0.1"}
+	if ($opt_s) {$cli .= " --seed $opt_s"}
+	$cli .= " | gzip > $dir/$rna";
+	system($cli) == 0 or die;
+}
+
+# Align
+
+chdir $dir;
+foreach my $prog (@program) {
+	my $cli = "$TIME $runalign $dna $rna";
+	$cli .= " --threads $opt_p" if $opt_p;
+	$cli .= " --debug" if $opt_d;
+	$cli .= " $prog";
+	print "${cli}\n";
+	if ($opt_f or !-e "$prog.ftx.gz") {
+		system($cli) == 0 or die "ERROR: from $cli\n";
+	}
+}
+
+# Checksum
+
+if ($opt_m) {
+	my @file = ($dna, $ftx, $rna);
+	foreach my $prog (@program) {push @file, "$prog.ftx.gz"}
+	foreach my $f (@file) {
+		my $out = ($f =~ /\.gz$/)  ? `gunzip -c $f | $MD5` : `cat $f | $MD5`;
+		my ($md5) = split(/\s+/, $out);
+		print "MD5 $f: $md5\n";
+	}
+}
