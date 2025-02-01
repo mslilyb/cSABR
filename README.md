@@ -10,3 +10,10 @@ messing around with container implementations of common read alignment programs!
 ## Building a Singularity Image
 
 As a note, all `.def` files found in the `deffiles/` directory will require the end user to make edits according to their home system. Fields requiring user input are flanked/defined in the following format `<INSTRUCTIONS>`.
+
+
+## Misc
+
+- As of right now, I am working on being able to seamlessly incorporate container versions of aligners into the pipeline (hence copying over `src` from SABR)
+- Still need to determine if best practice is to distribute recipes or full images (latter supported, is it tractable?)
+
