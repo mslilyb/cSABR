@@ -1,0 +1,17 @@
+BootStrap: library
+From: ubuntu:22.04
+
+%files
+	/home/alrescha/sourcerepos/gem3-mapper /align
+
+%post
+	apt-get update && apt-get install -y make gcc
+	mkdir -p align
+	cd /align
+	./configure
+	make
+
+%runscript
+	cd /align/bin
+	exec ./gem-mapper "$@"
+

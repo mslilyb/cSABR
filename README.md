@@ -62,6 +62,8 @@ pip install spython
 
 - When comparing outputs between containers and SABR, try to ensure that your files are in the same format/orientation. There is an amount of beautification that occurs during the pipeline, which can make it seem like you're completely wrong.
 
+- Containers hosted on repos like [Biocontainers](https://biocontainers.pro/) **can be run without downloading**, which while requiring a network connection is promising for the purposes of distribution. 
+
 ## Progress
 
 - The `pblat` container works, and produces the same output as the SABR blat (i.e. conda pblat)!

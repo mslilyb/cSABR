@@ -1,12 +1,9 @@
-BootStrap: Library
+BootStrap: library
 From: ubuntu:22.04
-
-# note: this could be ubuntu:latest as well
 
 %files #needed if building from source
 <ABSOLUTE PATH TO SOURCE HERE> /align
-#Alternatively
-<ABSOLUTE PATH TO BINARY(?)> /align
+
 %post
 mkdir -p /align
 cd /align

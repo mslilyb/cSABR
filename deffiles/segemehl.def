@@ -1,0 +1,23 @@
+BootStrap: library
+From: ubuntu:22.04
+
+%files 
+	/home/alrescha/sourcerepos/segemehl-0.3.4.tar.gz /seg.tar.gz
+	/home/alrescha/sourcerepos/htslib-1.21.tar.bz2 /hts.tar.bz2
+
+%post
+	apt-get update && apt-get install -y --no-install-recommends gcc make liblzma-dev libncurses5-dev libncursesw5-dev bzip2 gzip zlib1g-dev libbz2-dev pkg-config
+	bunzip2 /hts.tar.bz2
+	tar -xf hts.tar
+	tar -xzf seg.tar.gz
+	cd /htslib-1.21
+	./configure
+	make
+	make install
+	cd /segemehl-0.3.4
+	make
+	mv /segemehl-0.3.4 /align
+
+%runscript
+	cd /align
+	exec ./segemehl.x "$@"
