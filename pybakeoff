@@ -1,14 +1,25 @@
 #!/usr/bin/env python3
 
 import hashlib
-import os
+import os.path as path
 import platform
 import random
 import src.watchdogs as watchdogs # this is something that I'll deal with later
 import src.parsers as sparse
 import src.constants as bconsts
 
+# Functions
+def mappath():
+	spath = path.abspath(__file__)
+	spath = spath.split("/")[:-1]
+	spath = "/".join(spath)
+	return spath
+
 b_args = sparse.bakeargs()
+
+# Establish working directory
+basepath = mappath()
+srcpath = basepath + "/src"
 
 # Generate list of programs, verify they're all valid.
 if b_args.programs == 'all':
@@ -18,6 +29,6 @@ else:
 	watchdogs.verifyprograms(progs)
 
 # Find time commands here
-
 # Setup
-print(os.path.abspath(b_args.dna))
+if b_args.f or not path.isdir(b_args.dir):
+	print("okie dokie")
