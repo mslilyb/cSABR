@@ -36,6 +36,11 @@ The python bakeoff control script is a WIP, as is its documentation. Please see 
 - develop deffiles for all other alignment programs.
 - `run-aligner.py` needs a way to pass in host bind directories if I'm automating containers. Add argparse? Alter bakeoff too? Could just bind `bakeoff` location, but not certain that's wise.
 
+### pybakeoff
+- Enable `md5` option
+- Ensure all output is in target directory
+- Expand role of `watchdogs.py`, incorporate error handling into all parts of process
+- Develop a testing suite.
 
 ## Building a Singularity Image from a Definition File
 

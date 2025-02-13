@@ -15,6 +15,14 @@ import sys
 Main bakeoff control program. Currently uses IPC to access other parts of the
 pipeline, with aims to internalize all python code into one cohesive unit.
 
+Modules:
+	- constants.py: contains all 'constants' used in the program, such as list
+					of programs and internal commands, flags, filenames, and more.
+	- parsers.py: contains all argparse parsers. Certain modules could be used
+				  either within the program or independently. All parsers will
+				  be here.
+	- watchdogs.py: User input and general error handling. Has a logger.
+	
 While the argparse is in the parsers.py module, I will include a list of all
 possible arguments and flags for the program, for ease of coding. The names are
 somewhat self-explanatory, but feel free to use the --help flag on the
