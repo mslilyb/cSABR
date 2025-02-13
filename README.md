@@ -68,6 +68,20 @@ pip install spython
 
 - The `pblat` container works, and produces the same output as the SABR blat (i.e. conda pblat)!
 
+### pybakeoff
+
+The python bakeoff control script is a WIP, as is its documentation. Please see within the script to understand more about it. It currently runs with all the same options.
+
+#### Current Status:
+
+- Certain program outputs go to directory `pybakeoff` is executed in, rather than in target build directory. This is because `cd` is easier in perl and I haven't tried it yet in python.
+- `run-aligner.py` and `read-simulator.py` are both targets for integration into the control script. As it stands, I'm using IPC to access them, which is more than a little awkward.
+- `run-aligner.py` could use with some abstraction/standardization. I have an idea on how to use a loop to work through the programs.
+- There isn't a way to time commands, yet, pending a discussion with Ian on how best to do so. The goal is long term reproduciblity.
+- Exactly `gmap` requires that the input genome file and its location be *separate*, and does not tolerate absolute or relative paths (WHAT?)
+- Even without the `-d` flag, a lot of extraneous files are left in the target directory. Are they needed?
+- `md5` checksums have yet to be implemented.
+
 ## Next Steps
 
 - Use `pblat` to begin exploring container performance compared to conda. Evaluate following cases:
