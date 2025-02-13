@@ -4,7 +4,7 @@ messing around with container implementations of common read alignment programs!
 ## Repo Map:
 - `bakeoff`: unaltered SABR bakeoff script. WIP.
 - `pybakeoff`: Python implementation of SABR bakeoff script. Even more WIP.
-- `deffiles`: recipes for building Singularity Containers. See [Building a Singularity Image](#building-a-singularity-image)
+- `deffiles`: recipes for building Singularity Containers. See [Building a Singularity Image](#building-a-singularity-image-from-a-definition-file)
 - `input`: intermediate files captured from `bakeoff` script that are used as inputs in the pipeline for alignment programs. Obtained using the `-d` flag. Must be unzipped before usage.
 - `src`: WIP sourcecode for `bakeoff`. Integrating containers is WIP. Most untouched.
 
