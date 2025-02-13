@@ -40,5 +40,7 @@ def bakeargs():
 		checksums on data and *.ftx.gz files')
 	parser.add_argument('-f', action='store_true', help='Force overwrite of \
 		any existing files. Normal behavior is skipping them.')
+	parser.add_argument('-d', action='store_true', help='Enable debug mode, \
+		keeping temporary files.')
 
 	return parser.parse_args()

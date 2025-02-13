@@ -1,34 +1,109 @@
 #!/usr/bin/env python3
 
+import gzip
 import hashlib
-import os.path as path
+import os
 import platform
 import random
 import src.watchdogs as watchdogs # this is something that I'll deal with later
-import src.parsers as sparse
-import src.constants as bconsts
+import src.parsers as parsers
+import src.constants as c
+import subprocess
+import sys
 
-# Functions
+"""
+Main bakeoff control program. Currently uses IPC to access other parts of the
+pipeline, with aims to internalize all python code into one cohesive unit.
+
+While the argparse is in the parsers.py module, I will include a list of all
+possible arguments and flags for the program, for ease of coding. The names are
+somewhat self-explanatory, but feel free to use the --help flag on the
+command line or refer to the module for more information. Each of the following
+are part of the b_args namespace. To access any of them, use b_args.<whatever>
+
+dna, ftx, dir, programs, processors, seed, t, m, f, d
+"""
+
+#############
+# FUNCTIONS #
+#############
+
+# Finds path to executable. Do I need to do this?
 def mappath():
-	spath = path.abspath(__file__)
+	spath = os.path.abspath(__file__)
 	spath = spath.split("/")[:-1]
 	spath = "/".join(spath)
 	return spath
 
-b_args = sparse.bakeargs()
+def createtempfile(infile, d, outfile):
+	dest = d + "/" + outfile
 
-# Establish working directory
+	if os.path.isfile(dest):
+		os.unlink(dest)
+
+	if infile.endswith('.gz'): fp = gzip.open(infile, mode='rt')
+	else:					   fp = open(infile, mode='r')
+
+	with open(dest, mode='w') as ofp:
+		for line in fp:
+			ofp.write(line)
+		fp.close()
+
+	return dest
+
+
+#########
+# SETUP #
+#########
+
+# Establish working directory. Do I need to do this?
 basepath = mappath()
 srcpath = basepath + "/src"
 
-# Generate list of programs, verify they're all valid.
-if b_args.programs == 'all':
-	progs = bconsts.BAKEPROGS
-else:
-	progs = b_args.programs
-	watchdogs.verifyprograms(progs)
+# Harvest input.
+b_args = parsers.bakeargs()
 
-# Find time commands here
-# Setup
-if b_args.f or not path.isdir(b_args.dir):
-	print("okie dokie")
+# Initialize output directory.
+os.makedirs(b_args.dir, exist_ok=True)
+
+# Verify programs.
+if b_args.programs == ['all']:
+	progs = c.BAKEPROGS
+else:
+	progs = watchdogs.verifyprograms(b_args.programs)
+
+# Find time commands here (yikes.)
+
+
+# Overwrite protection
+if b_args.f == False and os.path.isdir(b_args.dir):
+	progs = watchdogs.noverwritten(progs, b_args.dir)
+
+# Create temp files for IPC. Removes existing ones first.
+dnaout = createtempfile(b_args.dna, b_args.dir, c.GENOMEFILE)
+ftxout = createtempfile(b_args.ftx, b_args.dir, c.FTXFILE)
+
+# Simulate Reads. The usage of constants here might be overkill.
+rsim_cmd = c.SIMULATORCMD.format(src=srcpath, dna=dnaout, ftx=ftxout)
+if b_args.t:
+	rsim_cmd += c.OPTS['ENABLE_TESTING_MODE']
+if b_args.seed != None:
+	rsim_cmd += c.OPTS['SET_SEED'].format(seed=b_args.seed)
+
+rsim_cmd += f' | gzip > {b_args.dir}/{c.READSFILE}'
+
+result = subprocess.run(rsim_cmd, shell=True)
+
+# Start alignment.
+
+for prog in progs:
+	align_cmd = c.ALIGNERCMD.format(src=srcpath, dna=dnaout, bdir=b_args.dir, \
+	reads=c.READSFILE)
+	if b_args.processors != 1:
+		align_cmd += c.OPTS['SET_THREADS'].format(pcount=b_args_processors)
+	if b_args.d:
+		align_cmd += c.OPTS['ENABLE_DEBUG_MODE']
+
+	align_cmd += f' {prog} {b_args.dir}'
+	print(align_cmd)
+	result = subprocess.run(align_cmd, shell=True)

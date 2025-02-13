@@ -68,6 +68,7 @@ parser = argparse.ArgumentParser(description=f'spliced alignment runner')
 parser.add_argument('genome', help='genome file in FASTA format')
 parser.add_argument('reads', help='reads file in FASTA format')
 parser.add_argument('program', help='program name (from conda package)')
+parser.add_argument('dire', help='output directory because cd in python sucks?')
 parser.add_argument('--threads', type=int, default=1,
 	help='number of threads if changeable [%(default)i]')
 parser.add_argument('--debug', action='store_true',
@@ -76,8 +77,8 @@ arg = parser.parse_args()
 
 # Run Aligner
 
-out = f'tmp-{arg.program}' # temporary output file
-ftx = f'ftx-{arg.program}' # temporary ftx file
+out = f'{arg.dire}/tmp-{arg.program}' # temporary output file
+ftx = f'{arg.dire}/ftx-{arg.program}' # temporary ftx file
 
 if arg.program == 'blat':
 	run(f'blat {arg.genome} {arg.reads} {out} -out=sim4')
@@ -99,7 +100,8 @@ elif arg.program == 'gem3-mapper':
 	run(f'gem-mapper -I {arg.genome}.gem -i {arg.reads} -t {arg.threads} > {out}')
 	samfile_to_ftxfile(out, ftx)
 elif arg.program == 'gmap':
-	if not os.path.exists(f'{arg.genome}-gmap'): run(f'gmap_build -d {arg.genome}-gmap -D . {arg.genome}')
+	gen = arg.genome.lstrip('build/')
+	if not os.path.exists(f'{arg.genome}-gmap'): run(f'gmap_build -d {gen}-gmap -D {arg.dire} {arg.genome}')
 	fasta = needfasta(arg)
 	run(f'gmap {fasta} -d {arg.genome}-gmap -D . -f samse -t {arg.threads} > {out}')
 	samfile_to_ftxfile(out, ftx)
@@ -152,7 +154,7 @@ with open(ftx) as fp:
 		if ref not in aligned: aligned[ref] = ali
 		else: aligned[ref] += '~' + ali # chaining extra alignments
 
-with gzip.open(f'{arg.program}.ftx.gz', 'wt') as fp:
+with gzip.open(f'{arg.dire}/{arg.program}.ftx.gz', 'wt') as fp:
 	for ref in refs:
 		if ref in aligned: print(ref, aligned[ref], sep='\t', file=fp)
 		else:              print(ref, 'None', sep='\t', file=fp)
