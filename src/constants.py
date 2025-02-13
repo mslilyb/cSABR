@@ -46,7 +46,7 @@ BAKEPROGS = [
 ]
 
 # Allowable operating systems. Required for Conda and time compatibility. 
-# Hoping to deprecate time with a python module. Time yet to be implemented.
+# Hoping to deprecate time with a python module. Time yet to be tested on Darwin.
 TIMER = {
 	"Linux": '/usr/bin/time -v ',
 	"Darwin": '/usr/bin/time -l '

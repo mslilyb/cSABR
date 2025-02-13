@@ -13,7 +13,8 @@ import sys
 
 """
 Main bakeoff control program. Currently uses IPC to access other parts of the
-pipeline, with aims to internalize all python code into one cohesive unit.
+pipeline, with aims to internalize all python code into one cohesive unit while
+maintaining the ability to run the constituent parts individually.
 
 Modules:
 	- constants.py: contains all 'constants' used in the program, such as list
@@ -64,7 +65,7 @@ def createtempfile(infile, d, outfile):
 # SETUP #
 #########
 
-# Establish working directory. Do I need to do this?
+# Establish working directory. Do I need to do this? Maybe not when no IPC.
 basepath = mappath()
 srcpath = basepath + "/src"
 
@@ -91,7 +92,8 @@ if b_args.f == False and os.path.isdir(b_args.dir):
 dnaout = createtempfile(b_args.dna, b_args.dir, c.GENOMEFILE)
 ftxout = createtempfile(b_args.ftx, b_args.dir, c.FTXFILE)
 
-# Simulate Reads. The usage of constants here might be overkill.
+# Simulate Reads. The usage of constants here is overkill, and removing IPC
+# should fix that.
 rsim_cmd = c.SIMULATORCMD.format(src=srcpath, dna=dnaout, ftx=ftxout)
 if b_args.t:
 	rsim_cmd += c.OPTS['ENABLE_TESTING_MODE']
@@ -102,7 +104,8 @@ rsim_cmd += f' | gzip > {b_args.dir}/{c.READSFILE}'
 
 result = subprocess.run(rsim_cmd, shell=True)
 
-# Start alignment.
+# Start alignment. Same as above, constants are a bit much but removing IPC is
+# the goal, I think.
 
 for prog in progs:
 	align_cmd = timecmd + c.ALIGNERCMD.format(src=srcpath, dna=dnaout, \
