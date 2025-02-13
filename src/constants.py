@@ -46,11 +46,11 @@ BAKEPROGS = [
 ]
 
 # Allowable operating systems. Required for Conda and time compatibility. 
-# Hoping to deprecate time with a python module.
-OS = [
-	"Linux",
-	"Darwin"
-]
+# Hoping to deprecate time with a python module. Time yet to be implemented.
+TIMER = {
+	"Linux": '/usr/bin/time -v ',
+	"Darwin": '/usr/bin/time -l '
+}
 
 # Filename constants
 GENOMEFILE = "genome.fa"

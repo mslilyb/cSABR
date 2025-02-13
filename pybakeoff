@@ -22,7 +22,7 @@ Modules:
 				  either within the program or independently. All parsers will
 				  be here.
 	- watchdogs.py: User input and general error handling. Has a logger.
-	
+
 While the argparse is in the parsers.py module, I will include a list of all
 possible arguments and flags for the program, for ease of coding. The names are
 somewhat self-explanatory, but feel free to use the --help flag on the
@@ -81,7 +81,7 @@ else:
 	progs = watchdogs.verifyprograms(b_args.programs)
 
 # Find time commands here (yikes.)
-
+timecmd = c.TIMER[platform.system()]
 
 # Overwrite protection
 if b_args.f == False and os.path.isdir(b_args.dir):
@@ -105,13 +105,12 @@ result = subprocess.run(rsim_cmd, shell=True)
 # Start alignment.
 
 for prog in progs:
-	align_cmd = c.ALIGNERCMD.format(src=srcpath, dna=dnaout, bdir=b_args.dir, \
-	reads=c.READSFILE)
+	align_cmd = timecmd + c.ALIGNERCMD.format(src=srcpath, dna=dnaout, \
+		bdir=b_args.dir, reads=c.READSFILE)
 	if b_args.processors != 1:
 		align_cmd += c.OPTS['SET_THREADS'].format(pcount=b_args_processors)
 	if b_args.d:
 		align_cmd += c.OPTS['ENABLE_DEBUG_MODE']
 
 	align_cmd += f' {prog} {b_args.dir}'
-	print(align_cmd)
 	result = subprocess.run(align_cmd, shell=True)

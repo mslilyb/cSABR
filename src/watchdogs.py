@@ -7,6 +7,14 @@ import warnings
 
 """
 Validation tools and error handling for bakeoff scripts.
+
+To add:
+	- Some sort of shell command error handler.
+	- perhaps an output checker for each aligner????
+
+To do:
+	- develop list of other common errors and exceptions.
+	- enable logfile control from CLI (simulprint? verbose? silent?)
 """
 
 # MESSAGES
@@ -26,10 +34,9 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(format='%(levelname)s: %(message)s', level= logging.INFO)
 
 # FUNCTIONS
-def watchbake():
-	return None
 
-# Determine if all programs exist in bakeoff pipline
+# Determine if all programs exist in bakeoff pipline. Wish I could pass by
+# reference. Currently duplicate function with run-aligner.py, but not forever.
 def verifyprograms(progs):
 	for prog in progs:
 		if prog not in bconsts.BAKEPROGS:
@@ -46,7 +53,8 @@ def verifyprograms(progs):
 
 
 # Determine if any files exist already and skip them. Run when option '-f' is
-# not supplied. Wish I could pass by reference.
+# not supplied. Wish I could pass by reference. Currently duplicate function
+# with run-aligner.py, but not forever.
 
 def noverwritten(prgs, builddir):
 	for prg in prgs:
