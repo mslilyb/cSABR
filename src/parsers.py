@@ -4,9 +4,8 @@ import argparse
 Argument parsers to use for user I/O for the SABR project.
 """
 
-"""
-bakeoff main script parser
-"""
+# Main script parser. Returns namespace object with all user arguments and
+# options.
 def bakeargs():
 	# Required positional arguments
 	parser = argparse.ArgumentParser(description=f'python3 implementation of \
