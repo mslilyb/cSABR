@@ -44,7 +44,9 @@ _HELP = {
 
 # Determine if all programs exist in bakeoff pipline. Wish I could pass by
 # reference. Currently duplicate function with run-aligner.py, but not forever.
-# Returns a list of valid programs, sans the ones that do not exst.
+# Returns a list of valid programs, sans the ones that do not exst. Throws an
+# error and exits if none remain after checking.
+
 def verifyprograms(progs):
 	for prog in progs:
 		if prog not in bconsts.BAKEPROGS:
