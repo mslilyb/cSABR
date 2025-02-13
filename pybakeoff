@@ -37,13 +37,15 @@ dna, ftx, dir, programs, processors, seed, t, m, f, d
 # FUNCTIONS #
 #############
 
-# Finds path to executable. Do I need to do this?
+# Finds path to executable. Do I need to do this? Returns path to pybakeoff dir.
 def mappath():
 	spath = os.path.abspath(__file__)
 	spath = spath.split("/")[:-1]
 	spath = "/".join(spath)
 	return spath
 
+# Creates temporary files, unzipping archives as necessary. Needed for IPC?
+# Removes any existing ones first. Returns path to tempfile.
 def createtempfile(infile, d, outfile):
 	dest = d + "/" + outfile
 
@@ -81,7 +83,7 @@ if b_args.programs == ['all']:
 else:
 	progs = watchdogs.verifyprograms(b_args.programs)
 
-# Find time commands here (yikes.)
+# Find time commands here (yikes.).
 timecmd = c.TIMER[platform.system()]
 
 # Overwrite protection
