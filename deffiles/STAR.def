@@ -1,0 +1,20 @@
+BootStrap: library
+From: ubuntu:22.04
+
+%files #needed if building from source
+	/home/alrescha/sourcerepos/STAR /align
+
+%environment
+
+%post
+	mkdir -p /align/source
+	cd /align/source
+	apt-get update && apt-get install -y --no-install-recommends g++ make build-essential xxd zlib1g-dev libbz2-dev
+	make 
+
+%runscript
+	cd /align/source
+	exec ./STAR "$@"
+%startscript
+	cd /align/source
+	exec ./STAR "$@"

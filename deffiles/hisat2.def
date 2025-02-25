@@ -1,0 +1,20 @@
+BootStrap: library
+From: ubuntu:22.04
+
+%files #needed if building from source
+	/home/alrescha/sourcerepos/hisat2-2.2.1 /align
+
+%environment
+
+%post
+	mkdir -p /align
+	cd /align
+	apt-get update && apt-get install -y --no-install-recommends gcc make build-essential
+	make 
+
+%runscript
+	cd /align
+	exec ./hisat2 "$@"
+%startscript
+	cd /align
+	exec ./hisat2 "$@"

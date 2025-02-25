@@ -1,0 +1,18 @@
+BootStrap: library
+From: ubuntu:22.04
+
+%files #needed if building from source
+	/home/alrescha/sourcerepos/ncbi-magicblast-1.7.2 /align
+
+%environment
+
+%post
+	mkdir -p /align/bin
+	apt-get update && apt-get install -y --no-install-recommends libxml2-dev libgomp1
+
+%runscript
+	cd /align/bin
+	exec ./magicblast "$@"
+%startscript
+	cd /align/bin
+	exec ./magicblast "$@"

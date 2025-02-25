@@ -1,0 +1,20 @@
+BootStrap: library
+From: ubuntu:22.04
+
+%files #needed if building from source
+	/home/alrescha/sourcerepos/bowtie2-2.5.4 /align
+
+%environment
+
+%post
+	mkdir -p /align
+	cd /align
+	apt-get update && apt-get install -y --no-install-recommends g++ make zlib1g-dev libbz2-dev perl
+	make
+
+%runscript
+	cd /align
+	exec ./bowtie2 "$@"
+%startscript
+	cd /align
+	exec ./bowtie2 "$@"

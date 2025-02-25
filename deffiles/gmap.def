@@ -2,17 +2,20 @@ BootStrap: library
 From: ubuntu:22.04
 
 %files #needed if building from source
-<ABSOLUTE PATH TO SOURCE HERE> /align
+/home/alrescha/sourcerepos/gmap-2024-11-20 /align
 
 %post
 mkdir -p /align
 cd /align
-apt-get update && apt-get install -y --no-install-recommends build-essential libssl-dev zlib1g-dev
-make && cp ./pblat /usr/bin/pblat && rm -rf * .git .travis.yml
+apt-get update && apt-get install -y --no-install-recommends gcc perl make build-essential
+./configure
+make
+make check
+make install
 
 %runscript
 cd /align
-exec pblat "$@"
+exec gmap "$@"
 %startscript
 cd /align
-exec pblat "$@"
+exec gmap "$@"
