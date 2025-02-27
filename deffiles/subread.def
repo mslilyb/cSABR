@@ -1,0 +1,39 @@
+BootStrap: library
+From: ubuntu:22.04
+
+%files #needed if building from source
+	/home/alrescha/sourcerepos/subread-2.0.8-source /align
+
+%environment
+	export PATH=/align/bin:$PATH
+
+%post
+	mkdir -p /align/src
+	cd /align/src
+	apt-get update && apt-get install -y --no-install-recommends gcc make libc6-dev zlib1g-dev libbz2-dev less poppler-utils
+	make -f Makefile.Linux
+
+%runscript
+	cd /align/bin
+	exec ./subread-align "$@"
+%startscript
+	cd /align/bin
+	exec ./subread-align "$@"
+
+%help
+	This container holds all of the programs in the subread project, running subread-align by default. Other options include:
+		- exactSNP
+		- featureCounts
+		- subindel
+		- subjunc
+		- sublong
+		- subread-buildindex
+		- utilities
+	To run a different program, invoke it specifically on the command line using `singularity exec`. Here is an example:
+		`singularity exec subread.sif exactSNP <ARGUMENTS AND OPTIONS HERE>`
+
+	For more details on the different programs, see subread documentation. You can read it in the terminal using:
+		`singularity exec subread.sif less /align/doc/SubreadUsersGuide.pdf`
+
+	Alternatively, you can save a local copy using:
+		`singularity exec subread.sif cat /align/doc/SubreadUsersGuide.pdf > yourfileofchoice.pdf`

@@ -2,9 +2,10 @@ BootStrap: library
 From: ubuntu:latest
 
 %files
-/home/alrescha/sourcerepos/bbmap /align
-
+	/home/alrescha/sourcerepos/bbmap /align
 
 %runscript
-cd /align
-exec ./bbmap.sh "$@"
+	cd /align
+	exec ./bbmap.sh "$@"
+
+%help

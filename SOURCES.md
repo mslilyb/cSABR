@@ -7,17 +7,17 @@
 * [bowtie2 containers](https://biocontainers.pro/tools/bowtie2)
 
 ## Source Code
-* [bwa](https://github.com/lh3/bwa) (skip?)
+* ~~[bwa](https://github.com/lh3/bwa)~~ (deprecated by minimap2)
 * [gem3-mapper](https://github.com/smarco/gem3-mapper) (done)
 * [gmap](http://research-pub.gene.com/gmap/src/gmap-gsnap-2024-11-20.tar.gz) (done)
 * [hisat2](https://daehwankimlab.github.io/hisat2/download/) (done)
 * [magicblast](https://ncbi.github.io/magicblast/doc/download.html) (has a docker image!) (done, but only on x86)
 * [minimap2](https://github.com/lh3/minimap2) (done)
-* [pblat](https://github.com/icebert/pblat) (done (i think))
+* [pblat](https://github.com/icebert/pblat) (done)
 * [segemehl](http://legacy.bioinf.uni-leipzig.de/Software/segemehl/) (check install notes) (done)
 * [star](https://github.com/alexdobin/STAR) (also has binaries) (done)
-* [subread](https://sourceforge.net/projects/subread/files/subread-2.0.8/) (installation guide is 404, will have to feel it out)
-* [tophat](https://ccb.jhu.edu/software/tophat/index.shtml) (src and binaries)
+* [subread](https://sourceforge.net/projects/subread/files/subread-2.0.8/) (done)
+* ~~[tophat](https://ccb.jhu.edu/software/tophat/index.shtml)~~ (deprecated by hisat2)
 
 ### Install notes.
  
