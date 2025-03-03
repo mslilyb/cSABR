@@ -176,3 +176,6 @@ sifs/
 
 # Ignore all softlinks
 *.ln
+
+# Ignore Sublime Projects and Workspaces
+*.sublime-*
