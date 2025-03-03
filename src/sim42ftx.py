@@ -3,7 +3,7 @@ import gzip
 import os
 import sys
 
-from toolbox import FTX, sam_to_ftx, readfasta
+from src.toolbox import FTX, sam_to_ftx, readfasta
 
 """
 Standalone file conversion for use to standardize outputs from tests
@@ -20,7 +20,7 @@ def sim4file_to_ftxfile(filename, ftxfile=None):
 	n = 0
 	with open(filename) as fp:
 		if ftxfile is not None: out = open(ftxfile, 'w')
-		else:				out = sys.stdout
+		else:				    out = sys.stdout
 
 		for line in fp:
 			if line.startswith('seq1 ='):

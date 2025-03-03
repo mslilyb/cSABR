@@ -36,8 +36,8 @@ def createtempfile(infile, d, outfile):
 # PARSER #
 ##########
 
-# Main script parser. Returns namespace object with all user arguments and
-# options.
+# Main script parser
+
 # Required positional arguments
 parser = argparse.ArgumentParser(description=f'python3 implementation of \
 	bakeoff control.')
@@ -49,7 +49,6 @@ parser.add_argument('dir', type=str, metavar='<directory>', help='name of \
 	desired output directory')
 
 # Optional positional arguments
-
 parser.add_argument('programs', default='all', nargs='*', \
 	metavar='<programs>', help='Specify desired programs to use in bakeoff.\
 	 Default behavior is to use all of them.')

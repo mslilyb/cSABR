@@ -1,7 +1,7 @@
 import gzip
 import os
 import re
-import sim42ftx
+#import src.sim42ftx
 import sys
 
 # toolbox.py - various functions for the SABR project
@@ -13,11 +13,19 @@ import sys
 # FUNCTIONS #
 #############
 
-def needfasta(readfile):
-	uzipd = readfile[:-3]
-	if not os.path.exists(fasta):
-		os.system(f'gunzip -k {readfile}')
-	return uzipd
+# Function that generates a table from an FTX file, then yields a tuple containing
+# the name, sequence, and ftxtable for a fasta entry.
+def generator(fastafile, ftxfile):
+	"""generates name, seq, ftx-genes from fasta and ftx files"""
+	ftx_table = {}
+	fp = getfp(ftxfile)
+	for line in fp:
+		ftx = FTX.parse(line.rstrip())
+		if ftx.chrom not in ftx_table: ftx_table[ftx.chrom] = []
+		ftx_table[ftx.chrom].append(ftx)
+	for defline, seq in readfasta(fastafile):
+		chrom = defline.split()[0]
+		if chrom in ftx_table: yield chrom, seq, ftx_table[chrom]
 
 # Function that opens a file, allowing to read from stdin for IPC. Returns
 # either a filepointer or sys.stdin.
@@ -26,6 +34,28 @@ def getfp(filename):
 	if   filename.endswith('.gz'): return gzip.open(filename, 'rt')
 	elif filename == '-':          return sys.stdin
 	else:                          return open(filename)
+
+def needfastq(readfile):
+	fastq = f'{readfile[0:readfile.find(".")]}.fq.gz'
+	if not os.path.exists(fastq):
+		with gzip.open(fastq, 'wt') as fp:
+			for name, seq in readfasta(readfile):
+				print(name,seq)
+				print('@', name, file=fp, sep='')
+				print(seq, file=fp)
+				print('+', file=fp)
+				print('J' * len(seq), file=fp)
+	return fastq
+
+def needfasta(readfile):
+	uzipfa = readfile[:-3]
+	print(uzipfa)
+	statement = not os.path.exists(uzipfa)
+	print(statement)
+	if not os.path.exists(uzipfa):
+		os.system(f'gunzip -k {readfile}')
+	return uzipfa
+
 
 # Function that reads a fasta file, separating the defline from the sequence.
 # Yields tuples containing the name and sequence.
@@ -51,20 +81,44 @@ def readfasta(filename):
 	yield(name, ''.join(seqs))
 	fp.close()
 
-# Function that generates a table from an FTX file, then yields a tuple containing
-# the name, sequence, and ftxtable for a fasta entry.
-def generator(fastafile, ftxfile):
-	"""generates name, seq, ftx-genes from fasta and ftx files"""
-	ftx_table = {}
-	fp = getfp(ftxfile)
-	for line in fp:
-		ftx = FTX.parse(line.rstrip())
-		if ftx.chrom not in ftx_table: ftx_table[ftx.chrom] = []
-		ftx_table[ftx.chrom].append(ftx)
-	for defline, seq in readfasta(fastafile):
-		chrom = defline.split()[0]
-		if chrom in ftx_table: yield chrom, seq, ftx_table[chrom]
+def sim4file_to_ftxfile(filename, ftxfile):
+	chrom = None
+	strand = None
+	exons = []
+	ref = None
+	n = 0
+	with open(filename) as fp:
+		with open(ftxfile, 'w') as out:
+			for line in fp:
+				if line.startswith('seq1 ='):
+					if chrom is not None:
+						ftx = FTX(chrom, str(n), strand, exons, f'~{ref}')
+						print(ftx, file=out)
+					chrom = None
+					strand = None
+					exons = []
+					ref = line[7:].split(' ')[0][:-1]
+					n += 1
+					continue
+				elif line.startswith('seq2 ='):
+					f = line.split()
+					chrom = f[2][:-1]
+					continue
+				f = line.split()
+				if len(f) != 4: continue
+				beg, end = f[1][1:-1].split('-')
+				exons.append((int(beg) -1, int(end) -1))
+				st = '+' if f[3] == '->' else '-'
+				if strand is None: strand = st
+				else: assert(strand == st)
+			ftx = FTX(chrom, str(n), strand, exons, f'~{ref}')
+			print(ftx, file=out)
 
+
+
+###########
+# CLASSES #
+###########
 
 #######
 # FTX #
