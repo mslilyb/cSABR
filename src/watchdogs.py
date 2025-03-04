@@ -2,7 +2,7 @@ import logging
 import os.path as path
 import platform
 import sys
-import src.constants as bconsts
+import constants as bconsts
 import warnings
 
 """

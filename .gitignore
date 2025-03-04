@@ -179,3 +179,6 @@ sifs/
 
 # Ignore Sublime Projects and Workspaces
 *.sublime-*
+
+# Ignore temporary files
+*.tmp
