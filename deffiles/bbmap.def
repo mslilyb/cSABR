@@ -4,6 +4,9 @@ From: ubuntu:latest
 %files
 	/home/alrescha/sourcerepos/bbmap /align
 
+%post
+	apt-get update && apt-get install -y default-jre
+
 %runscript
 	cd /align
 	exec ./bbmap.sh "$@"

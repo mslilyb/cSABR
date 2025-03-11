@@ -9,7 +9,7 @@ From: ubuntu:22.04
 %post
 	mkdir -p /align
 	cd /align
-	apt-get update && apt-get install -y --no-install-recommends g++ make zlib1g-dev libbz2-dev perl
+	apt-get update && apt-get install -y --no-install-recommends g++ make zlib1g-dev python3 libbz2-dev perl
 	make
 
 %runscript
