@@ -79,15 +79,17 @@ class Program:
 		if self._status['formatted'] == True:
 			return
 
+		hasfasta = self._extras['fasta']
+		hasfastq = self._extras['fastq']
+
 		if 'need_format' not in self.init.keys():
 			self.cli = '{fasta}{fastq}' + self.cli
 
-		elif self._extras['fastq'] and not self._extras['fasta']:
+		elif hasfastq and not hasfasta:
 			self.cli = '{fasta}' + self.cli
 			
-		elif self._extras['fasta'] and not self._extras['fastq']:
+		elif hasfasta and not fastq:
 			self.cli = '{fastq}' + self.cli
-
 
 		self.cli = self.cli.format(odir=direc, genome=GENOMEFILE, reads=READSFILE, thr=threads,
 			fasta=hasfasta if hasfasta else "", fastq=hasfastq if hasfastq else "")
