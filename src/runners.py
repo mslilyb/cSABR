@@ -1,12 +1,11 @@
-from abc import ABC, abstractmethod
 import argparse
 from copy import deepcopy
-import files
+import src.filetools as filetools
 import json
 import os
 import sys
-import watchdogs
-import toolbox
+import src.watchdogs as watchdogs
+import src.tools as tools
 
 #############
 # CONSTANTS #
@@ -22,7 +21,7 @@ configfp = open("/home/alrescha/Code/cSABR/src/0config.json")
 BAKEPROGS = json.load(configfp)
 
 class Program:
-	def __init__(self, name, cli, init, reqs):
+	def __init__(self, name, cli, init, reqs, direc: str, threads: int):
 		self.name = name
 		self.cli = cli
 		self._checks = {
@@ -55,6 +54,8 @@ class Program:
 		else:
 			self.reqs = reqs
 
+		self.direc = direc
+		self.threads = threads
 		
 		
 	def __str__(self):
@@ -70,15 +71,15 @@ class Program:
 		yield 'init', self.init
 		yield 'reqs', self.reqs
 
-	def _execute(self, cmd):
-		for check in self._checks:
-			self._checks[check]()
-		result = tools.run(cmd)
+	def execute(self):
+		self._checks['is_initialized']()
+		print('Now running:', self.name, file=sys.stderr)
+		print('cmd:', self.cli, file=sys.stderr)
+		#result = tools.run(self.cli)
 
-	def _formatself(self, direc: str, threads: int):
+	def _formatself(self):
 		if self._status['formatted'] == True:
 			return
-
 		hasfasta = self._extras['fasta']
 		hasfastq = self._extras['fastq']
 
@@ -91,18 +92,20 @@ class Program:
 		elif hasfasta and not fastq:
 			self.cli = '{fastq}' + self.cli
 
-		self.cli = self.cli.format(odir=direc, genome=GENOMEFILE, reads=READSFILE, thr=threads,
+		self.cli = self.cli.format(odir=self.direc, genome=GENOMEFILE, reads=READSFILE, thr=self.threads,
 			fasta=hasfasta if hasfasta else "", fastq=hasfastq if hasfastq else "")
 
 		if not self._status['has_init']:
 			return
 
-		if 'file_exists' in self.init.keys():
-			for file, fix in self.init['file_exists']:
+		if 'file_exists' in self.init:
+			newdic = {}
+			for file, fix in self.init['file_exists'].items():
 				formattedfile = file.format(genome=GENOMEFILE)
-				formattedfix = fix.format(odir=direc, genome=GENOMEFILE)
-				self.init['file_exists'][file] = fixformat
-				self.init['file_exists'][formattedfile] = self.init['file_exists'].pop(file)
+				formattedfix = fix.format(odir=self.direc, genome=GENOMEFILE)
+				newdic[formattedfile] = formattedfix
+			
+			self.init['file_exists'] = newdic
 
 		self._status['formatted'] = True
 
@@ -110,11 +113,13 @@ class Program:
 		self.name = dic['name']
 		self.cli = dic['cli']
 		self.init = dic['init']
+		if self.init != {}:
+				self._status['has_init'] = True
 		self.reqs = dic['reqs']
 
-	def initialize(self, direc: str, threads: int):
+	def initialize(self):
 		# Ensure all strings are formatted
-		self._checks['is_formatted'](direc, threads)
+		self._checks['is_formatted']()
 
 		# Check if initialized
 		if self._status['initialized']:
@@ -129,16 +134,17 @@ class Program:
 
 		# Create required files
 		if 'file_exists' in self.init.keys():
-			for file, fix in self.init['file_exists']:
-				if not os.path.exists(f'{direc}/{file}'):
-					self._execute(fix)
+			for file, fix in self.init['file_exists'].items():
+				if not os.path.exists(f'{self.direc}/{file}'):
+					print(f'Now initializing: {self.direc}/{file}', file=sys.stderr)
+					#tools.run(fix)
 
 		# Change format of reads file
-		if 'need_format' in initdict.keys():
-			if initdict['need_format'] == 'fasta':
-				self._extras['fasta'] = files.needfasta(READSFILE)
-			if initdict['need_format'] == 'fastq':
-				self._extras['fastq'] = files.needfastq(READSFILE)
+		if 'need_format' in self.init.keys():
+			if self.init['need_format'] == 'fasta':
+				self._extras['fasta'] = filetools.needfasta(f'{self.direc}/{READSFILE}')
+			if self.init['need_format'] == 'fastq':
+				self._extras['fastq'] = filetools.needfastq(f'{self.direc}/{READSFILE}')
 
 		self._status['initialized'] = True
 
@@ -165,19 +171,25 @@ class Run:
 		if self.Arguments.programs == 'all':
 			plist = BAKEPROGS.keys()
 		else:
-			plist = self.Arguments.programs
+			plist = watchdogs.verifyprograms(self.Arguments.programs, BAKEPROGS)
 		
+		# Overwrite protection
+		if self.Arguments.f == False and os.path.isdir(self.Arguments.dir):
+				plist = watchdogs.noverwritten(plist, self.Arguments.dir)
+
 		for p in plist:
-			newprog = Program(None, None, None, None)
+			newprog = Program(None, None, None, None, None, None)
 			newprog.dicttoobj(BAKEPROGS[p])
-			newprog.initialize(self.Arguments.dir, self.Arguments.processors)
+			newprog.threads = self.Arguments.processors
+			newprog.direc = self.Arguments.dir
+			newprog.initialize()
 			self._Programs[p] = newprog
 
 
 	def do_run(self):
 		self._checks['setup']()
-		for prog in self._Programs.keys():	
-			self._execute(prog)
+		for prog in self._Programs.values():	
+			prog.execute()
 
 	def setup(self):
 		"""
@@ -210,7 +222,8 @@ class Run:
 		for check in self._checks:
 			self._checks[check]()
 
-		self.show()
+		#self.show()
+		self.do_run()
 
 		
 

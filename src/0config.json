@@ -70,17 +70,17 @@
     },
     "STAR": {
         "name": "STAR",
-        "cli": "singularity run --bind ./{odir}:/mnt --genomeDir {genome}--star --readFilesIn {reads} --readFilesCommand 'gunzip -c' --outFileNamePrefix /mnt/tmp--STAR --runThreadN 1",
+        "cli": "singularity run --bind ./{odir}:/mnt sifs/STAR.sif --genomeDir {genome}--star --readFilesIn {reads} --readFilesCommand 'gunzip -c' --outFileNamePrefix /mnt/tmp--STAR --runThreadN 1",
         "init": {
             "file_exists": {
-                "{genome}--star": "singularity run --bind ./{odir}:/mnt --runMode genomeGenerate --genomeDir {genome}-star --genomeFastaFile {genome} --genomeSAindexNbases 8"
+                "{genome}--star": "singularity run --bind ./{odir}:/mnt sifs/STAR.sif --runMode genomeGenerate --genomeDir {genome}-star --genomeFastaFile {genome} --genomeSAindexNbases 8"
             }
         },
         "reqs": []
     },
     "subread": {
         "name": "subread",
-        "cli": "singularity run --bind ./{odir}:/mnt -i {genome} -r {reads} -t 0 --SAMoutput --multiMapping -B 5 -T {thr} -o /mnt/tmp--subread",
+        "cli": "singularity run --bind ./{odir}:/mnt sifs/subread.sif -i {genome} -r {reads} -t 0 --SAMoutput --multiMapping -B 5 -T {thr} -o /mnt/tmp--subread",
         "init": {
             "file_exists": {
                 "{genome}.00.b.tab": "singularity exec --bind ./{odir}:/mnt sifs/subread.sif subread-buildindex -o {genome} {genome}"

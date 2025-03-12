@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
+import src.runners as runners
 import src.watchdogs as watchdogs
 
 #############
@@ -86,18 +88,10 @@ args = parser.parse_args()
 # Init output directory
 os.makedirs(args.dir, exist_ok=True)
 
-# Verify programs supplied exist
-if args.programs == ['all']:
-	progs = None # Need to build classes and constructors
-else:
-	progs = watchdogs.verifyprograms() # this will be a method, built in to the class, I think.
+# Create Run object
 
-# Shouldn't need a time command here, since you can just time the whole script?
+bakerun = runners.Run(args)
 
-# Overwrite protection?
-if args.f == False and os.path.isdir(args.dir):
-	progs = watchdogs.noverwritten() # will this be a method? \
+# Run tests
 
-# Create temp files for IPC?
-
-# Simulate reads? IPC? Needed? Probably.
+bakerun.test()

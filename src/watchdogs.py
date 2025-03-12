@@ -2,7 +2,6 @@ import logging
 import os.path as path
 import platform
 import sys
-import constants as bconsts
 import warnings
 
 """
@@ -47,9 +46,9 @@ _HELP = {
 # Returns a list of valid programs, sans the ones that do not exst. Throws an
 # error and exits if none remain after checking.
 
-def verifyprograms(progs):
+def verifyprograms(progs, BAKEPROGS):
 	for prog in progs:
-		if prog not in bconsts.BAKEPROGS:
+		if prog not in BAKEPROGS.keys():
 			missing = progs.pop(progs.index(prog))
 			logging.error(_ERRORS['INVALID_PROG'], missing)
 			logging.info(_HELP['MISSPELLED?'])
