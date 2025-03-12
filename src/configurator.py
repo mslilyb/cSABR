@@ -99,7 +99,7 @@ parser = argparse.ArgumentParser(description='create .json configuration file wi
 parser.add_argument('json', type=str, metavar='<file>', help='config file in .json format')
 parser.add_argument('--readin', action = 'store_true', help='Read in details from command line.')
 parser.add_argument('-o', '--overwrite', action='store_true', help='overwrite any existing config file. default behavior is to append')
-
+parser.add_argument('--remake', action='store_true', help='just rerender the config file')
 args = parser.parse_args()
 
 
@@ -118,6 +118,10 @@ else:
 	progs = json.load(fp)
 	fp.close()
 
+if args.remake:
+	fp = open(args.json, 'wt')
+	json.dump(progs, fp, indent=4)
+	sys.exit()
 
 while True:
 	newpro = addprog()
@@ -137,4 +141,4 @@ for pro in progs.keys():
 print('Writing json.')
 
 fp = open(args.json, 'wt')
-json.dump(progs, fp)
+json.dump(progs, fp, indent=4)
