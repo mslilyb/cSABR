@@ -49,7 +49,6 @@ def needfastq(readfile):
 
 def needfasta(readfile):
 	uzipfa = readfile[:-3]
-	print(uzipfa)
 	statement = not os.path.exists(uzipfa)
 	print(statement)
 	if not os.path.exists(uzipfa):

@@ -37,10 +37,10 @@ def createtempfile(infile, d, outfile):
 ##########
 
 # Main script parser
-
-# Required positional arguments
 parser = argparse.ArgumentParser(description=f'python3 implementation of \
 	bakeoff control.')
+
+# Required positional arguments
 parser.add_argument('dna', type=str, metavar='<fasta file>', help='path \
 	to genome in fasta format.')
 parser.add_argument('ftx', type=str, metavar='<ftx file>', help='path to \
