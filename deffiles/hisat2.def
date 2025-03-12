@@ -9,7 +9,7 @@ From: ubuntu:22.04
 %post
 	mkdir -p /align
 	cd /align
-	apt-get update && apt-get install -y --no-install-recommends gcc make build-essential
+	apt-get update && apt-get install -y --no-install-recommends gcc make build-essential python3 python-is-python3
 	make 
 
 %runscript

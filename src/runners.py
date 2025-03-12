@@ -22,12 +22,12 @@ BAKEPROGS = {
 	"gem3-mapper": "singularity run --bind ./{odir}/mnt sifs/gem3mapper.sif -I /mnt/{genome}.gem -i {reads} -t {thr} > /mnt/tmp--gem3-mapper",
 	"gmap": "singularity run --bind ./{odir}/mnt sifs/gmap.sif {fasta} -d {genome}-gmap -D /mnt -f samse -t {thr} > /mnt/tmp--gmap",
 	"hisat2": "singularity run --bind ./{odir}/mnt sifs/hisat2.sif -x /mnt/{genome} -U /mnt/{reads} -f -p {thr} > /mnt/tmp--hisat2",
-	"magicblast": "singularity run --bind ./{odir}/mnt",
-	"minimap2": "singularity run --bind ./{odir}/mnt",
-	"pblat": "singularity run --bind ./{odir}/mnt",
-	"segemehl": "singularity run --bind ./{odir}/mnt",
-	"star": "singularity run --bind ./{odir}/mnt",
-	"subread": "singularity run --bind ./{odir}/mnt",
+	"magicblast": "singularity run --bind ./{odir}/mnt sifs/magicblast.sif -db /mnt/{genome} -query /mnt/{reads} -num_threads {thr} > /mnt/tmp--magicblast",
+	"minimap2": "singularity run --bind ./{odir}/mnt sifs/minimap2.sif -ax splice /mnt/{genome} /mnt/{reads} -t {thr} > /mnt/tmp--minimap2",
+	"pblat": "singularity run --bind ./{odir}/mnt sifs/pblat.sif /mnt/{genome} /mnt/{reads} -threads={thr} -out=sim4",
+	"segemehl": "singularity run --bind ./{odir}/mnt sifs/segemehl.sif -i /mnt/{genome} -q /mnt/{reads} -t {thr} --splits -o /mnt/tmp--segemehl",
+	"star": "singularity run --bind ./{odir}/mnt --genomeDir {genome}--star --readFilesIn {reads} --readFilesCommand 'gunzip -c' --outFileNamePrefix /mnt/tmp--STAR --runThreadN 1",
+	"subread": "singularity run --bind ./{odir}/mnt -i {genome} -r {reads} -t 0 --SAMoutput --multiMapping -B 5 -T {thr} -o /mnt/tmp--subread",
 	#"tophat"
 }
 
