@@ -1,8 +1,10 @@
 import gzip
+from io import TextIOWrapper
 import os
 import re
 #import src.sim42ftx
 import sys
+from typing import Generator
 
 # toolbox.py - various functions for the SABR project
 
@@ -13,10 +15,41 @@ import sys
 # FUNCTIONS #
 #############
 
+def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
+	# create indexes
+	dna = [] # dna positional index
+	rna = [] # rna sequence
+	for beg, end in gftx.exons:
+		for i in range(end - beg + 1):
+			coor = i + beg
+			dna.append(coor)
+			rna.append(chrom[coor])
+
+	# generate reads and their ftx annotations
+	for i in range(len(rna) - size + 1):
+		coor = [dna[i+j] for j in range(size)]
+		exons = []
+		beg = coor[0]
+		seen = 0
+		for j in range(size -1):
+			d = coor[j+1] - coor[j]
+			if d > 1:
+				end = beg + j -seen
+				exons.append( (beg, end) )
+				seen += end - beg + 1
+				beg = coor[j+1]
+		exons.append( (beg, beg+j -seen +1) )
+		rftx = FTX(gftx.chrom, gftx.name, gftx.strand, exons, 'r')
+		read = ''.join([chrom[beg:end+1] for beg, end in exons])
+
+		yield rftx, read
+
 # Function that generates a table from an FTX file, then yields a tuple containing
 # the name, sequence, and ftxtable for a fasta entry.
-def generator(fastafile, ftxfile):
-	"""generates name, seq, ftx-genes from fasta and ftx files"""
+def genmaker(fastafile, ftxfile) -> Generator[tuple, None, None]:
+	"""
+	generates name, seq, ftx-genes from fasta and ftx files
+	"""
 	ftx_table = {}
 	fp = getfp(ftxfile)
 	for line in fp:
@@ -29,13 +62,15 @@ def generator(fastafile, ftxfile):
 
 # Function that opens a file, allowing to read from stdin for IPC. Returns
 # either a filepointer or sys.stdin.
-def getfp(filename):
-	"""returns a file pointer for reading based on file name"""
+def getfp(filename) -> TextIOWrapper:
+	"""
+	Opens a file dependent on suffix. Returns a file object.
+	"""
 	if   filename.endswith('.gz'): return gzip.open(filename, 'rt')
 	elif filename == '-':          return sys.stdin
 	else:                          return open(filename)
 
-def needfastq(readfile):
+def needfastq(readfile) -> str:
 	fastq = f'{readfile[0:readfile.find(".")]}.fq.gz'
 	if not os.path.exists(fastq):
 		with gzip.open(fastq, 'wt') as fp:
@@ -47,7 +82,7 @@ def needfastq(readfile):
 				print('J' * len(seq), file=fp)
 	return fastq
 
-def needfasta(readfile):
+def needfasta(readfile) -> str:
 	uzipfa = readfile[:-3]
 	statement = not os.path.exists(uzipfa)
 	print(statement)
@@ -58,7 +93,7 @@ def needfasta(readfile):
 
 # Function that reads a fasta file, separating the defline from the sequence.
 # Yields tuples containing the name and sequence.
-def readfasta(filename):
+def readfasta(filename) -> Generator[tuple, None, None]:
 	"""generates defline, seq from fasta files"""
 	name = None
 	seqs = []
@@ -80,7 +115,7 @@ def readfasta(filename):
 	yield(name, ''.join(seqs))
 	fp.close()
 
-def sim4file_to_ftxfile(filename, ftxfile):
+def sim4file_to_ftxfile(filename, ftxfile) -> None:
 	chrom = None
 	strand = None
 	exons = []
@@ -113,7 +148,33 @@ def sim4file_to_ftxfile(filename, ftxfile):
 			ftx = FTX(chrom, str(n), strand, exons, f'~{ref}')
 			print(ftx, file=out)
 
+# function that creates a reads file for use in the bakeoff project
+# 
+def simulatereads(arg) -> None:
+	"""
+	Function that creates a reads file for use in the bakeoff project
+	Takes in an argparse.Namespace, which has all of the arguments from
+	the main script, and prints directly to file, with no return value.
+	"""
+	for cname, cseq, gtfxs in genmaker(arg.fasta, arg.ftx):
+		for gftx in gtfxs:
+			if random.random() > arg.samplegenes: continue
+			genes += 1
+			for rftx, rseq in generate_reads(gftx, cseq, arg.readlength):
+				if random.random() < arg.samplereads:
+					print('>', rftx, '+', sep='')
+					print(rseq)
+					reads += 1
+					bases += arg.readlength
+				if arg.double and random.random() < arg.samplereads:
+					rseq = tools.anti(rseq)
+					print('>', rftx, '-', sep='')
+					print(rseq)
+					reads += 1
+					bases += arg.readlength
 
+	print(f'genes: {genes}', f'reads: {reads}', f'bases: {bases}',
+		sep='\n', file=sys.stderr)
 
 ###########
 # CLASSES #

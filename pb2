@@ -90,8 +90,8 @@ os.makedirs(args.dir, exist_ok=True)
 
 # Create Run object
 
-bakerun = runners.Run(args)
+bakeoff = runners.Run(args)
 
 # Run tests
 
-bakerun.test()
+bakeoff.test()

@@ -1,11 +1,12 @@
 import argparse
 from copy import deepcopy
-import src.filetools as filetools
+import src.files as files
 import json
 import os
 import sys
 import src.watchdogs as watchdogs
 import src.tools as tools
+from typing import Generator
 
 #############
 # CONSTANTS #
@@ -20,8 +21,42 @@ READSFILE = "reads.fa.gz"
 configfp = open("/home/alrescha/Code/cSABR/src/0config.json")
 BAKEPROGS = json.load(configfp)
 
+###########
+# CLASSES #
+###########
+
+###########
+# PROGRAM #
+###########
+
 class Program:
-	def __init__(self, name, cli, init, reqs, direc: str, threads: int):
+	"""
+	Class representing an alignment program to be used in the cSABR bakeoff pipeline.
+
+	A program should know its own name, all of its requirements, and be able to run itself,
+	reporting the results to whatever method or program invoked it.
+
+	This is theoretically generalizable, but for now specifically is for use in cSABR.
+	"""
+
+	# Dunders
+	def __init__(self, name, cli, init, reqs, direc: str, threads: int) -> None:
+		"""
+		Parameters
+		----------
+		+ name        `str`    name of program. independent of run options
+		+ cli         `str`    string containing command for running the program. independent of run options
+		+ init        `dict`   dictionary of initializations required to execute the Program. independent of run options
+		+ reqs        `list`   currently unused??? i have ideas on using this to generalize the object
+		+ direc       `str`    output directory for the bakeoff run. dependent on run options
+		+ thread      `int`    number of threads/processors to be used during Program execution. dependent on run options
+
+		Attributes
+		----------
+		+ _checks     `dict`   dictionary of methods used to ensure correct initialization of a Program object
+		+ _status     `dict`   dictionary of boolean values to track progress of Program instantiation
+		+ _extras     `dict`   dictionary of extra values needed to run a Program, used only when necessary
+		"""
 		self.name = name
 		self.cli = cli
 		self._checks = {
@@ -58,26 +93,28 @@ class Program:
 		self.threads = threads
 		
 		
-	def __str__(self):
+	def __str__(self) -> str:
+		"""
+		Stringify a Program object, returning a string with each independent parameter on a single line.
+		"""
 		return f'Name: {self.name}\ncli: {self.cli}\ninits: {self.init}\nAdditional Requirements: {self.reqs}'
 
-	def __iter__(self):
+	def __iter__(self) -> Generator[tuple, None, None]:
 		"""
-		Functions essentially as 'objtodict()' if called via built-in dict() function.
-		Ex: dict(someprogram)
+		Yields independent parameters as tuples, which can be used to create dictionaries or as a generator.
 		"""
 		yield 'name', self.name
 		yield 'cli', self.cli
 		yield 'init', self.init
 		yield 'reqs', self.reqs
 
-	def execute(self):
-		self._checks['is_initialized']()
-		print('Now running:', self.name, file=sys.stderr)
-		print('cmd:', self.cli, file=sys.stderr)
-		#result = tools.run(self.cli)
-
-	def _formatself(self):
+	# Private methods
+	def _formatself(self) -> None:
+		"""
+		Private method that converts a Program's cli and other commands from templates
+		into specific commands, using run options. After calling it, a Program will be
+		ready to execute.
+		"""
 		if self._status['formatted'] == True:
 			return
 		hasfasta = self._extras['fasta']
@@ -88,7 +125,7 @@ class Program:
 
 		elif hasfastq and not hasfasta:
 			self.cli = '{fasta}' + self.cli
-			
+
 		elif hasfasta and not fastq:
 			self.cli = '{fastq}' + self.cli
 
@@ -109,7 +146,16 @@ class Program:
 
 		self._status['formatted'] = True
 
-	def dicttoobj(self, dic):
+	# Public methods
+	def execute(self) -> int:
+		"""
+		Public method that runs a Program's cli, returnig the resulting exit code.
+		"""
+		self._checks['is_initialized']()
+		print('Now running:', self.name, file=sys.stderr)
+		print('cmd:', self.cli, file=sys.stderr)
+		#result = tools.run(self.cli)
+	def fromdict(self, dic):
 		self.name = dic['name']
 		self.cli = dic['cli']
 		self.init = dic['init']
@@ -150,12 +196,24 @@ class Program:
 
 class Run:
 	"""
-	Represents a single run of the bakeoff?
+	Represents a single run of the bakeoff. 
+	A Run should know its user defined options, the programs that need to be used, be able to orchestrate the execution of all of its programs.
+	It should track and report the progress and status of the bakeoff as it runs.
 
 	"""
 
 	def __init__(self, Arguments: argparse.Namespace):
-		"""Generator function for Run class"""
+		"""
+		Parameters
+		----------
+		+ Arguments    `argparse.Namespace`    Namespace object from argparse.
+
+		Attributes
+		----------
+		+ _checks      `dict`   dictionary containing methods used to ensure bakeoff has been setup correctly
+		+ _Programs    `dict`   dictionary containing all programs for use in bakeoff. Keys are program names, values are Program objects
+		+ status       `dict`   dictionary containing boolean values tracking the status of the bakeoff. currently for setup.
+		"""
 		self.Arguments = Arguments
 		self._Programs = {}
 		self.status = {
@@ -166,7 +224,7 @@ class Run:
 			'setup': self.setup
 		}
 
-	# 'Private' methods
+	# Private methods
 	def _makeprogs(self):
 		if self.Arguments.programs == 'all':
 			plist = BAKEPROGS.keys()
@@ -179,13 +237,13 @@ class Run:
 
 		for p in plist:
 			newprog = Program(None, None, None, None, None, None)
-			newprog.dicttoobj(BAKEPROGS[p])
+			newprog.fromdict(BAKEPROGS[p])
 			newprog.threads = self.Arguments.processors
 			newprog.direc = self.Arguments.dir
 			newprog.initialize()
 			self._Programs[p] = newprog
 
-
+	# Public methods
 	def do_run(self):
 		self._checks['setup']()
 		for prog in self._Programs.values():	
