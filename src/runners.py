@@ -188,9 +188,9 @@ class Program:
 		# Change format of reads file
 		if 'need_format' in self.init.keys():
 			if self.init['need_format'] == 'fasta':
-				self._extras['fasta'] = filetools.needfasta(f'{self.direc}/{READSFILE}')
+				self._extras['fasta'] = files.needfasta(f'{self.direc}/{READSFILE}')
 			if self.init['need_format'] == 'fastq':
-				self._extras['fastq'] = filetools.needfastq(f'{self.direc}/{READSFILE}')
+				self._extras['fastq'] = files.needfastq(f'{self.direc}/{READSFILE}')
 
 		self._status['initialized'] = True
 
@@ -202,6 +202,7 @@ class Run:
 
 	"""
 
+	# Dunders
 	def __init__(self, Arguments: argparse.Namespace):
 		"""
 		Parameters

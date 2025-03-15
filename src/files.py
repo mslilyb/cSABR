@@ -4,12 +4,16 @@ import os
 import re
 #import src.sim42ftx
 import sys
-from typing import Generator
+from typing import Generator, TypeVar
 
 # toolbox.py - various functions for the SABR project
 
+################
+# TYPE ALIASES #
+################
 
-
+ftxo = TypeVar('ftxo', bound='FTX')
+sbf = TypeVar('sbf', bound='SAMbitflag')
 
 #############
 # FUNCTIONS #
@@ -17,8 +21,8 @@ from typing import Generator
 
 def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
 	# create indexes
-	dna = [] # dna positional index
-	rna = [] # rna sequence
+	dna: list[int] = [] # dna positional index
+	rna: list[str] = [] # rna sequence
 	for beg, end in gftx.exons:
 		for i in range(end - beg + 1):
 			coor = i + beg
@@ -44,13 +48,12 @@ def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
 
 		yield rftx, read
 
-# Function that generates a table from an FTX file, then yields a tuple containing
-# the name, sequence, and ftxtable for a fasta entry.
+
 def genmaker(fastafile, ftxfile) -> Generator[tuple, None, None]:
 	"""
 	generates name, seq, ftx-genes from fasta and ftx files
 	"""
-	ftx_table = {}
+	ftx_table: dict[str,ftxo] = {}
 	fp = getfp(ftxfile)
 	for line in fp:
 		ftx = FTX.parse(line.rstrip())
@@ -60,8 +63,7 @@ def genmaker(fastafile, ftxfile) -> Generator[tuple, None, None]:
 		chrom = defline.split()[0]
 		if chrom in ftx_table: yield chrom, seq, ftx_table[chrom]
 
-# Function that opens a file, allowing to read from stdin for IPC. Returns
-# either a filepointer or sys.stdin.
+
 def getfp(filename) -> TextIOWrapper:
 	"""
 	Opens a file dependent on suffix. Returns a file object.
@@ -71,7 +73,7 @@ def getfp(filename) -> TextIOWrapper:
 	else:                          return open(filename)
 
 def needfastq(readfile) -> str:
-	fastq = f'{readfile[0:readfile.find(".")]}.fq.gz'
+	fastq: str = f'{readfile[0:readfile.find(".")]}.fq.gz'
 	if not os.path.exists(fastq):
 		with gzip.open(fastq, 'wt') as fp:
 			for name, seq in readfasta(readfile):
@@ -90,9 +92,6 @@ def needfasta(readfile) -> str:
 		os.system(f'gunzip -k {readfile}')
 	return uzipfa
 
-
-# Function that reads a fasta file, separating the defline from the sequence.
-# Yields tuples containing the name and sequence.
 def readfasta(filename) -> Generator[tuple, None, None]:
 	"""generates defline, seq from fasta files"""
 	name = None
@@ -115,7 +114,7 @@ def readfasta(filename) -> Generator[tuple, None, None]:
 	yield(name, ''.join(seqs))
 	fp.close()
 
-def sim4file_to_ftxfile(filename, ftxfile) -> None:
+def sim4file_to_ftxfile(filename: str, ftxfile) -> None:
 	chrom = None
 	strand = None
 	exons = []
@@ -148,30 +147,36 @@ def sim4file_to_ftxfile(filename, ftxfile) -> None:
 			ftx = FTX(chrom, str(n), strand, exons, f'~{ref}')
 			print(ftx, file=out)
 
-# function that creates a reads file for use in the bakeoff project
-# 
-def simulatereads(arg) -> None:
+
+def simulatereads(fasta: str, ftx: str, rlen: int = 100,
+			test: bool = False, double: bool = False, out: TextIOWrapper = sys.stdout) -> None:
 	"""
 	Function that creates a reads file for use in the bakeoff project
-	Takes in an argparse.Namespace, which has all of the arguments from
-	the main script, and prints directly to file, with no return value.
 	"""
-	for cname, cseq, gtfxs in genmaker(arg.fasta, arg.ftx):
+	genes: int = 0
+	reads: int = 0
+	bases: int = 0
+
+	if test:
+		samplereads: float = 0.1
+		samplegenes: float = 0.1
+
+	for cname, cseq, gtfxs in genmaker(fasta, ftx):
 		for gftx in gtfxs:
-			if random.random() > arg.samplegenes: continue
+			if random.random() > samplegenes: continue
 			genes += 1
-			for rftx, rseq in generate_reads(gftx, cseq, arg.readlength):
-				if random.random() < arg.samplereads:
-					print('>', rftx, '+', sep='')
+			for rftx, rseq in generate_reads(gftx, cseq, rlen):
+				if random.random() < samplereads:
+					print('>', rftx, '+', sep='', file=out)
 					print(rseq)
 					reads += 1
-					bases += arg.readlength
-				if arg.double and random.random() < arg.samplereads:
+					bases += rlen
+				if double and random.random() < samplereads:
 					rseq = tools.anti(rseq)
-					print('>', rftx, '-', sep='')
+					print('>', rftx, '-', sep='', file=out)
 					print(rseq)
 					reads += 1
-					bases += arg.readlength
+					bases += rlen
 
 	print(f'genes: {genes}', f'reads: {reads}', f'bases: {bases}',
 		sep='\n', file=sys.stderr)
