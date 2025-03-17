@@ -1,9 +1,11 @@
 import gzip
 from io import TextIOWrapper
 import os
+import random
 import re
 #import src.sim42ftx
 import sys
+import tools
 from typing import Generator, TypeVar
 
 # toolbox.py - various functions for the SABR project
@@ -160,6 +162,9 @@ def simulatereads(fasta: str, ftx: str, rlen: int = 100,
 	if test:
 		samplereads: float = 0.1
 		samplegenes: float = 0.1
+	else:
+		samplegenes: float = 1.0
+		samplereads: float = 1.0
 
 	for cname, cseq, gtfxs in genmaker(fasta, ftx):
 		for gftx in gtfxs:
