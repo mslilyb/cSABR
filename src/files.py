@@ -3,9 +3,9 @@ from io import TextIOWrapper
 import os
 import random
 import re
-#import src.sim42ftx
+import shutil
 import sys
-import tools
+import src.tools as tools
 from typing import Generator, TypeVar
 
 # toolbox.py - various functions for the SABR project
@@ -49,7 +49,6 @@ def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
 		read = ''.join([chrom[beg:end+1] for beg, end in exons])
 
 		yield rftx, read
-
 
 def genmaker(fastafile, ftxfile) -> Generator[tuple, None, None]:
 	"""
@@ -116,6 +115,25 @@ def readfasta(filename) -> Generator[tuple, None, None]:
 	yield(name, ''.join(seqs))
 	fp.close()
 
+def reportalignments(reads: str, ftx: str, path: str) -> None:
+	refs: list[str] = [name for name, seq in readfasta(reads)]
+	aligned: dict[str,str] = {}
+
+	with getfp(ftx) as fp:
+		for line in fp:
+			ali, ref = line.rstrip().split('~')
+			if ref not in aligned:
+				aligned[ref] = ali
+			else:
+				aligned[ref] += '~' + ali
+
+	with gzip.open(path, 'wt') as fp:
+		for ref in refs:
+			if ref in aligned:
+				print(ref, aligned[ref], sep='\t', file=fp)
+			else:
+				print(ref, 'None', sep='\t', file=fp)
+
 def sim4file_to_ftxfile(filename: str, ftxfile) -> None:
 	chrom = None
 	strand = None
@@ -150,22 +168,20 @@ def sim4file_to_ftxfile(filename: str, ftxfile) -> None:
 			print(ftx, file=out)
 
 
-def simulatereads(fasta: str, ftx: str, rlen: int = 100,
-			test: bool = False, double: bool = False, out: TextIOWrapper = sys.stdout) -> None:
+def simulatereads(fasta: str, ftx: str, seed: int, rlen: int = 100,
+			samplereads: float = 1.0, samplegenes: float = 1.0,
+			double: bool = False, outf: TextIOWrapper = sys.stdout) -> None:
 	"""
 	Function that creates a reads file for use in the bakeoff project
 	"""
 	genes: int = 0
 	reads: int = 0
 	bases: int = 0
+	if seed != None:
+		random.seed(seed)
 
-	if test:
-		samplereads: float = 0.1
-		samplegenes: float = 0.1
-	else:
-		samplegenes: float = 1.0
-		samplereads: float = 1.0
-
+	if outf != None:
+		out = open(outf, 'w')
 	for cname, cseq, gtfxs in genmaker(fasta, ftx):
 		for gftx in gtfxs:
 			if random.random() > samplegenes: continue
@@ -173,13 +189,13 @@ def simulatereads(fasta: str, ftx: str, rlen: int = 100,
 			for rftx, rseq in generate_reads(gftx, cseq, rlen):
 				if random.random() < samplereads:
 					print('>', rftx, '+', sep='', file=out)
-					print(rseq)
+					print(rseq, file=out)
 					reads += 1
 					bases += rlen
 				if double and random.random() < samplereads:
 					rseq = tools.anti(rseq)
 					print('>', rftx, '-', sep='', file=out)
-					print(rseq)
+					print(rseq, file=out)
 					reads += 1
 					bases += rlen
 

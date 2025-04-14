@@ -2,7 +2,10 @@ import argparse
 from copy import deepcopy
 import src.files as files
 import json
+import logging
 import os
+import src.readsim as readsim
+import shutil
 import sys
 import src.watchdogs as watchdogs
 import src.tools as tools
@@ -14,7 +17,7 @@ from typing import Generator
 
 GENOMEFILE = "genome.fa"
 FTXFILE = "genome.ftx"
-READSFILE = "reads.fa.gz"
+READSFILE = "reads.fa"
 
 
 # List of all programs to be used in the bakeoff
@@ -127,7 +130,7 @@ class Program:
 			self.cli = '{fasta}' + self.cli
 
 		elif hasfasta and not fastq:
-			self.cli = '{fastq}' + self.cli
+			self.cli = '{fastq}' + self.clifiles
 
 		self.cli = self.cli.format(odir=self.direc, genome=GENOMEFILE, reads=READSFILE, thr=self.threads,
 			fasta=hasfasta if hasfasta else "", fastq=hasfastq if hasfastq else "")
@@ -147,14 +150,18 @@ class Program:
 		self._status['formatted'] = True
 
 	# Public methods
-	def execute(self) -> int:
+	def execute(self, is_dry) -> int:
 		"""
 		Public method that runs a Program's cli, returnig the resulting exit code.
 		"""
-		self._checks['is_initialized']()
-		print('Now running:', self.name, file=sys.stderr)
-		print('cmd:', self.cli, file=sys.stderr)
-		#result = tools.run(self.cli)
+		self._checks['is_initialized'](is_dry)
+		logging.info(f'Now running: {self.name}')
+		logging.info(f'cli: {self.cli}')
+		if is_dry:
+			return 0
+		result = tools.run(self.cli, f = None)
+		return(result)
+
 	def fromdict(self, dic):
 		self.name = dic['name']
 		self.cli = dic['cli']
@@ -163,7 +170,7 @@ class Program:
 				self._status['has_init'] = True
 		self.reqs = dic['reqs']
 
-	def initialize(self):
+	def initialize(self, is_dry):
 		# Ensure all strings are formatted
 		self._checks['is_formatted']()
 
@@ -182,15 +189,21 @@ class Program:
 		if 'file_exists' in self.init.keys():
 			for file, fix in self.init['file_exists'].items():
 				if not os.path.exists(f'{self.direc}/{file}'):
-					print(f'Now initializing: {self.direc}/{file}', file=sys.stderr)
-					#tools.run(fix)
+					logging.info(f'Now initializing: {self.direc}/{file}')
+					if is_dry:
+						continue
+					tools.run(fix, f = None)
 
 		# Change format of reads file
 		if 'need_format' in self.init.keys():
 			if self.init['need_format'] == 'fasta':
-				self._extras['fasta'] = files.needfasta(f'{self.direc}/{READSFILE}')
+				logging.info(f'{self.name} requires fasta format files. Reformatting.')
+				if not is_dry:
+					self._extras['fasta'] = files.needfasta(f'{self.direc}/{READSFILE}')
 			if self.init['need_format'] == 'fastq':
-				self._extras['fastq'] = files.needfastq(f'{self.direc}/{READSFILE}')
+				logging.info(f'{self.name} requires fastq format files. Reformatting.')
+				if not is_dry:
+					self._extras['fastq'] = files.needfastq(f'{self.direc}/{READSFILE}')
 
 		self._status['initialized'] = True
 
@@ -219,10 +232,12 @@ class Run:
 		self._Programs = {}
 		self.status = {
 			'setup_done': False,
+			'run_done': False
 		}
 
 		self._checks = {
-			'setup': self.setup
+			'setup': self.setup,
+			'ran': self.do_run
 		}
 
 	# Private methods
@@ -241,14 +256,46 @@ class Run:
 			newprog.fromdict(BAKEPROGS[p])
 			newprog.threads = self.Arguments.processors
 			newprog.direc = self.Arguments.dir
-			newprog.initialize()
+			newprog.initialize(self.Arguments.dry)
 			self._Programs[p] = newprog
+
+	def _makefiles(self):
+		newfastap = f'{os.path.abspath(self.Arguments.dir)}/{GENOMEFILE}'
+		newreadsp = f'{os.path.abspath(self.Arguments.dir)}/{READSFILE}'
+		logging.info(f'Preparing {newfastap}')
+		if not self.Arguments.dry:
+			with files.getfp(self.Arguments.dna) as f_in:
+				with open(newfastap, 'wt') as f_out:
+					shutil.copyfileobj(f_in, f_out)
+		
+		logging.info(f'Generating {newreadsp}')
+		if not self.Arguments.dry:
+			sgenes = 1.0
+			sreads = 1.0
+			if self.Arguments.t:
+				sgene = 0.1
+				sreads = 0.1
+			files.simulatereads(newfastap, self.Arguments.ftx, self.Arguments.seed, samplegenes = sgenes, samplereads = sreads, double = True, outf = newreadsp)
+
+
 
 	# Public methods
 	def do_run(self):
 		self._checks['setup']()
+		if self.status['run_done']:
+			return
 		for prog in self._Programs.values():	
-			prog.execute()
+			prog.execute(self.Arguments.dry)
+
+		self.status['run_done'] = True
+
+	def report(self):
+		self._checks['ran']()
+		logging.info('Reporting Run Results')
+		if not self.Arguments.dry:
+			readpath = f'{self.Arguments.dir}/{READSFILE}'
+			targetpath = f'{self.Arguments.dir}'
+			files.reportalignments(f'{self.Arguments.dir}/{READSFILE}', self.Arguments.ftx, f'')
 
 	def setup(self):
 		"""
@@ -257,9 +304,10 @@ class Run:
 		if self.status['setup_done']:
 			return
 
-		print("Configuring run.", file=sys.stderr)
+		logging.info('Configuring Run.')
 
 		self._makeprogs()
+		self._makefiles()
 		self.status['setup_done'] = True
 
 	def show(self):
@@ -281,7 +329,8 @@ class Run:
 		for check in self._checks:
 			self._checks[check]()
 
-		#self.show()
+		logging.info('Now showing Run')
+		self.show()
 		self.do_run()
 
 		
@@ -319,5 +368,3 @@ if __name__ == '__main__':
 
 
 	print(args.programs)
-	run = Run(args)
-	run.test()

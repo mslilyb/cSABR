@@ -77,7 +77,7 @@ if (not -d $dir or $opt_f) {
 
 chdir $dir;
 foreach my $prog (@program) {
-	my $cli = "$TIME $runalign $dna $rna";
+	my $cli = "$TIME $runalign $dna $rna $dir";
 	$cli .= " --threads $opt_p" if $opt_p;
 	$cli .= " --debug" if $opt_d;
 	$cli .= " $prog";

@@ -1,18 +1,20 @@
 import argparse
+from src.files import FTX, genmaker
+from io import TextIOWrapper
 import random
 import sys
-
-from toolbox import FTX, generator, anti
+from src.tools import anti
+from typing import Generator
 
 #############
 # FUNCTIONS #
 #############
 
 #
-def generate_reads(gftx, chrom, size):
+def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
 	# create indexes
-	dna = [] # dna positional index
-	rna = [] # rna sequence
+	dna: list[int] = [] # dna positional index
+	rna: list[str] = [] # rna sequence
 	for beg, end in gftx.exons:
 		for i in range(end - beg + 1):
 			coor = i + beg
@@ -51,7 +53,7 @@ def simreads(fasta, ftx, outfile=None, rlen = 100, gsample=1.0, rsample=1.0, see
 		out = open(outfile, 'w')
 	else:
 		out = sys.stdout
-	for cname, cseq, gtfxs in generator(fasta, ftx):
+	for cname, cseq, gtfxs in genmaker(fasta, ftx):
 		for gftx in gtfxs:
 			if random.random() > gsample:
 				continue
