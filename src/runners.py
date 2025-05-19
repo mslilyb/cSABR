@@ -1,14 +1,14 @@
 import argparse
 from copy import deepcopy
-import src.files as files
+import files
 import json
 import logging
 import os
-import src.readsim as readsim
+import readsim
 import shutil
 import sys
-import src.watchdogs as watchdogs
-import src.tools as tools
+import watchdogs
+import tools
 from typing import Generator
 
 #############

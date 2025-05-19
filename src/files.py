@@ -5,7 +5,7 @@ import random
 import re
 import shutil
 import sys
-import src.tools as tools
+import tools
 from typing import Generator, TypeVar
 
 # toolbox.py - various functions for the SABR project
