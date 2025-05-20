@@ -21,6 +21,29 @@ sbf = TypeVar('sbf', bound='SAMbitflag')
 # FUNCTIONS #
 #############
 
+def cigar_to_exons(cigar, pos):
+	"""converts cigar strings to exon coorinates"""
+	exons = []
+	beg = 0
+	end = 0
+	for match in re.finditer(r'(\d+)([\D])', cigar):
+		n = int(match.group(1))
+		op = match.group(2)
+		if   op == 'M': end += n
+		elif op == '=': end += n
+		elif op == 'X': end += n
+		elif op == 'D': pass
+		elif op == 'I': end += n
+		elif op == 'S': pass
+		elif op == 'H': pass
+		elif op == 'N':
+			exons.append((pos+beg-1, pos+end-2))
+			beg = end + n
+			end = beg
+	exons.append((pos+beg-1, pos+end-2))
+	return exons
+
+
 def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
 	# create indexes
 	dna: list[int] = [] # dna positional index
@@ -50,6 +73,7 @@ def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
 
 		yield rftx, read
 
+
 def genmaker(fastafile, ftxfile) -> Generator[tuple, None, None]:
 	"""
 	generates name, seq, ftx-genes from fasta and ftx files
@@ -73,6 +97,7 @@ def getfp(filename) -> TextIOWrapper:
 	elif filename == '-':          return sys.stdin
 	else:                          return open(filename)
 
+
 def needfastq(readfile) -> str:
 	fastq: str = f'{readfile[0:readfile.find(".")]}.fq.gz'
 	if not os.path.exists(fastq):
@@ -85,6 +110,7 @@ def needfastq(readfile) -> str:
 				print('J' * len(seq), file=fp)
 	return fastq
 
+
 def needfasta(readfile) -> str:
 	uzipfa = readfile[:-3]
 	statement = not os.path.exists(uzipfa)
@@ -92,6 +118,7 @@ def needfasta(readfile) -> str:
 	if not os.path.exists(uzipfa):
 		os.system(f'gunzip -k {readfile}')
 	return uzipfa
+
 
 def readfasta(filename) -> Generator[tuple, None, None]:
 	"""generates defline, seq from fasta files"""
@@ -115,6 +142,7 @@ def readfasta(filename) -> Generator[tuple, None, None]:
 	yield(name, ''.join(seqs))
 	fp.close()
 
+
 def reportalignments(reads: str, ftx: str, path: str) -> None:
 	refs: list[str] = [name for name, seq in readfasta(reads)]
 	aligned: dict[str,str] = {}
@@ -133,6 +161,7 @@ def reportalignments(reads: str, ftx: str, path: str) -> None:
 				print(ref, aligned[ref], sep='\t', file=fp)
 			else:
 				print(ref, 'None', sep='\t', file=fp)
+
 
 def sim4file_to_ftxfile(filename: str, ftxfile) -> None:
 	chrom = None
@@ -167,6 +196,37 @@ def sim4file_to_ftxfile(filename: str, ftxfile) -> None:
 			ftx = FTX(chrom, str(n), strand, exons, f'~{ref}')
 			print(ftx, file=out)
 
+
+def sam_to_ftx(filename):
+	"""generates ftx objects from sam file"""
+	n = 0
+	with open(filename, errors='ignore') as fp:
+		for line in fp:
+			if line == '': break
+			if line.startswith('@'): continue
+			f = line.split('\t')
+			qname = f[0]
+			bf = SAMbitflag(f[1])
+			chrom = f[2]
+			pos   = int(f[3])
+			cigar = f[5]
+
+			st = '-' if bf.read_reverse_strand else '+'
+			if bf.read_unmapped: continue
+			if bf.otherflags:
+				print(bf.otherflags)
+				sys.exit('unexpected flags found, debug me')
+			n += 1
+			exons = cigar_to_exons(cigar, pos)
+			yield FTX(chrom, str(n), st, exons, f'~{qname}')
+
+#### NEEDS TESTING
+def samfile_to_ftxfile(filename,ftxpath):#
+	"""generates ftx file from a sam file"""#
+	with open(ftxpath, 'w') as ofp:#
+		for ftx in sam_to_ftx(filename):#
+			print(ftx, file=ofp)#
+####
 
 def simulatereads(fasta: str, ftx: str, seed: int, rlen: int = 100,
 			samplereads: float = 1.0, samplegenes: float = 1.0,
@@ -329,47 +389,3 @@ class SAMbitflag:
 		for i in (1, 2, 4, 6, 7, 8, 10, 11):
 			if b[-i] == '1': self.otherflags.append(i)
 
-def cigar_to_exons(cigar, pos):
-	"""converts cigar strings to exon coorinates"""
-	exons = []
-	beg = 0
-	end = 0
-	for match in re.finditer(r'(\d+)([\D])', cigar):
-		n = int(match.group(1))
-		op = match.group(2)
-		if   op == 'M': end += n
-		elif op == '=': end += n
-		elif op == 'X': end += n
-		elif op == 'D': pass
-		elif op == 'I': end += n
-		elif op == 'S': pass
-		elif op == 'H': pass
-		elif op == 'N':
-			exons.append((pos+beg-1, pos+end-2))
-			beg = end + n
-			end = beg
-	exons.append((pos+beg-1, pos+end-2))
-	return exons
-
-def sam_to_ftx(filename):
-	"""generates ftx objects from sam file"""
-	n = 0
-	with open(filename, errors='ignore') as fp:
-		for line in fp:
-			if line == '': break
-			if line.startswith('@'): continue
-			f = line.split('\t')
-			qname = f[0]
-			bf = SAMbitflag(f[1])
-			chrom = f[2]
-			pos   = int(f[3])
-			cigar = f[5]
-
-			st = '-' if bf.read_reverse_strand else '+'
-			if bf.read_unmapped: continue
-			if bf.otherflags:
-				print(bf.otherflags)
-				sys.exit('unexpected flags found, debug me')
-			n += 1
-			exons = cigar_to_exons(cigar, pos)
-			yield FTX(chrom, str(n), st, exons, f'~{qname}')

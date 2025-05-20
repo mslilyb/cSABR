@@ -152,22 +152,25 @@ class Program:
 	# Public methods
 	def execute(self, is_dry) -> int:
 		"""
-		Public method that runs a Program's cli, returnig the resulting exit code.
+		Public method that runs a Program's cli, returning the resulting exit code.
 		"""
 		self._checks['is_initialized'](is_dry)
 		logging.info(f'Now running: {self.name}')
 		logging.info(f'cli: {self.cli}')
-		if is_dry:
-			return 0
+		if is_dry: return 0
 		result = tools.run(self.cli, f = None)
-		return(result)
+
+		tmpfp = self.direc + '/' + 'tmp--' + self.name #ugly. untested.
+		ftxfp = self.direc + '/' + 'ftx--' + self.name # ugly untested
+		files.samfile_to_ftxfile(tmpfp, ftxfp)
+		return 0
 
 	def fromdict(self, dic):
 		self.name = dic['name']
 		self.cli = dic['cli']
 		self.init = dic['init']
 		if self.init != {}:
-				self._status['has_init'] = True
+			self._status['has_init'] = True
 		self.reqs = dic['reqs']
 
 	def initialize(self, is_dry):
@@ -190,8 +193,9 @@ class Program:
 			for file, fix in self.init['file_exists'].items():
 				if not os.path.exists(f'{self.direc}/{file}'):
 					logging.info(f'Now initializing: {self.direc}/{file}')
-					if is_dry:
-						continue
+
+					if is_dry: continue
+
 					tools.run(fix, f = None)
 
 		# Change format of reads file
