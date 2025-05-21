@@ -61,7 +61,7 @@ def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
 		exons = []
 		beg = coor[0]
 		seen = 0
-		tools.progressbar(i, len(rna) - size + 1, prefix = 'Simulation:', suffix = 'Complete', length = 50)
+		#tools.progressbar(i, len(rna) - size + 1, prefix = 'Simulation:', suffix = 'Complete', length = 50)
 		for j in range(size -1):
 			d = coor[j+1] - coor[j]
 			if d > 1:
@@ -393,4 +393,3 @@ class SAMbitflag:
 		self.otherflags = []
 		for i in (1, 2, 4, 6, 7, 8, 10, 11):
 			if b[-i] == '1': self.otherflags.append(i)
-
