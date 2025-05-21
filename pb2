@@ -87,6 +87,10 @@ srcpath = basepath + "/src"
 # Harvest Input
 args = parser.parse_args()
 
+# Enable Stack Trace
+if args.d:
+	sys.settrace()
+
 # Init output directory
 os.makedirs(args.dir, exist_ok=True)
 

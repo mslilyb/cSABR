@@ -5,6 +5,7 @@ import random
 import re
 import shutil
 import sys
+import time
 import tools
 from typing import Generator, TypeVar
 
@@ -60,6 +61,7 @@ def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
 		exons = []
 		beg = coor[0]
 		seen = 0
+		tools.progressbar(i, len(rna) - size + 1, prefix = 'Simulation:', suffix = 'Complete', length = 50)
 		for j in range(size -1):
 			d = coor[j+1] - coor[j]
 			if d > 1:
@@ -100,6 +102,7 @@ def getfp(filename) -> TextIOWrapper:
 
 def needfastq(readfile) -> str:
 	fastq: str = f'{readfile[0:readfile.find(".")]}.fq.gz'
+	print(fastq.split('/')[1])
 	if not os.path.exists(fastq):
 		with gzip.open(fastq, 'wt') as fp:
 			for name, seq in readfasta(readfile):
@@ -108,7 +111,7 @@ def needfastq(readfile) -> str:
 				print(seq, file=fp)
 				print('+', file=fp)
 				print('J' * len(seq), file=fp)
-	return fastq
+	return fastq.split('/')[1]
 
 
 def needfasta(readfile) -> str:
@@ -258,6 +261,8 @@ def simulatereads(fasta: str, ftx: str, seed: int, rlen: int = 100,
 					print(rseq, file=out)
 					reads += 1
 					bases += rlen
+
+				
 
 	print(f'genes: {genes}', f'reads: {reads}', f'bases: {bases}',
 		sep='\n', file=sys.stderr)

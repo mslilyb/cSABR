@@ -63,11 +63,13 @@ class Program:
 		self.name = name
 		self.cli = cli
 		self._checks = {
+			'files_created': self._makereqs,
 			'is_formatted': self._formatself,
 			'is_initialized': self.initialize
 		}
 
 		self._status = {
+			'files_created': False,
 			'has_init': False,
 			'has_reqs': False,
 			'initialized': False,
@@ -129,7 +131,7 @@ class Program:
 		elif hasfastq and not hasfasta:
 			self.cli = '{fasta}' + self.cli
 
-		elif hasfasta and not fastq:
+		elif hasfasta and not hasfastq:
 			self.cli = '{fastq}' + self.clifiles
 
 		self.cli = self.cli.format(odir=self.direc, genome=GENOMEFILE, reads=READSFILE, thr=self.threads,
@@ -149,6 +151,25 @@ class Program:
 
 		self._status['formatted'] = True
 
+	def _makereqs(self, is_dry):
+
+		if self._status['files_created']:
+			return
+
+		# Change format of reads file
+		if 'need_format' in self.init.keys():
+			if self.init['need_format'] == 'fasta':
+				logging.info(f'{self.name} requires fasta format files. Reformatting.')
+				if not is_dry:
+					self._extras['fasta'] = files.needfasta(f'{self.direc}/{READSFILE}')
+			if self.init['need_format'] == 'fastq':
+				logging.info(f'{self.name} requires fastq format files. Reformatting.')
+				if not is_dry:
+					self._extras['fastq'] = files.needfastq(f'{self.direc}/{READSFILE}')
+					print(self._extras['fastq'], 'is the created file.')
+
+		self._status['files_created'] = True
+
 	# Public methods
 	def execute(self, is_dry) -> int:
 		"""
@@ -158,11 +179,16 @@ class Program:
 		logging.info(f'Now running: {self.name}')
 		logging.info(f'cli: {self.cli}')
 		if is_dry: return 0
-		result = tools.run(self.cli, f = None)
+
+		result = tools.run(self.cli)
 
 		tmpfp = self.direc + '/' + 'tmp--' + self.name #ugly. untested.
 		ftxfp = self.direc + '/' + 'ftx--' + self.name # ugly untested
-		files.samfile_to_ftxfile(tmpfp, ftxfp)
+		if self.name == 'pblat': #actually vomit inducing
+			files.sim4file_to_ftxfile(tmpfp, ftxfp)
+
+		else:
+			files.samfile_to_ftxfile(tmpfp, ftxfp)
 		return 0
 
 	def fromdict(self, dic):
@@ -175,6 +201,7 @@ class Program:
 
 	def initialize(self, is_dry):
 		# Ensure all strings are formatted
+		self._checks['files_created'](is_dry)
 		self._checks['is_formatted']()
 
 		# Check if initialized
@@ -185,9 +212,7 @@ class Program:
 		if not self._status['has_init']:
 			self._status['initialized'] = True
 			return
-
-		# Now run initializations
-
+			
 		# Create required files
 		if 'file_exists' in self.init.keys():
 			for file, fix in self.init['file_exists'].items():
@@ -197,17 +222,6 @@ class Program:
 					if is_dry: continue
 
 					tools.run(fix, f = None)
-
-		# Change format of reads file
-		if 'need_format' in self.init.keys():
-			if self.init['need_format'] == 'fasta':
-				logging.info(f'{self.name} requires fasta format files. Reformatting.')
-				if not is_dry:
-					self._extras['fasta'] = files.needfasta(f'{self.direc}/{READSFILE}')
-			if self.init['need_format'] == 'fastq':
-				logging.info(f'{self.name} requires fastq format files. Reformatting.')
-				if not is_dry:
-					self._extras['fastq'] = files.needfastq(f'{self.direc}/{READSFILE}')
 
 		self._status['initialized'] = True
 
@@ -267,6 +281,7 @@ class Run:
 		newfastap = f'{os.path.abspath(self.Arguments.dir)}/{GENOMEFILE}'
 		newreadsp = f'{os.path.abspath(self.Arguments.dir)}/{READSFILE}'
 		logging.info(f'Preparing {newfastap}')
+
 		if not self.Arguments.dry:
 			with files.getfp(self.Arguments.dna) as f_in:
 				with open(newfastap, 'wt') as f_out:
@@ -279,8 +294,8 @@ class Run:
 			if self.Arguments.t:
 				sgene = 0.1
 				sreads = 0.1
+			print('simulating reads')
 			files.simulatereads(newfastap, self.Arguments.ftx, self.Arguments.seed, samplegenes = sgenes, samplereads = sreads, double = True, outf = newreadsp)
-
 
 
 	# Public methods
@@ -310,8 +325,8 @@ class Run:
 
 		logging.info('Configuring Run.')
 
-		self._makeprogs()
 		self._makefiles()
+		self._makeprogs()
 		self.status['setup_done'] = True
 
 	def show(self):
