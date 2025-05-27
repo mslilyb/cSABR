@@ -21,7 +21,7 @@ READSFILE = "reads.fa"
 
 
 # List of all programs to be used in the bakeoff
-configfp = open("/home/alrescha/Code/cSABR/src/0config.json")
+configfp = open("src/0config.json")
 BAKEPROGS = json.load(configfp)
 
 ###########
