@@ -1,9 +1,9 @@
 import argparse
-from src.files import FTX, genmaker
+from files import FTX, genmaker
 from io import TextIOWrapper
 import random
 import sys
-from src.tools import anti
+from tools import anti
 from typing import Generator
 
 #############

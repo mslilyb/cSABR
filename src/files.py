@@ -146,7 +146,7 @@ def readfasta(filename) -> Generator[tuple, None, None]:
 	fp.close()
 
 
-def reportalignments(reads: str, ftx: str, path: str) -> None:
+def reportalignments(reads: str, ftx: str, odir: str, name: str) -> None:
 	refs: list[str] = [name for name, seq in readfasta(reads)]
 	aligned: dict[str,str] = {}
 
@@ -158,7 +158,7 @@ def reportalignments(reads: str, ftx: str, path: str) -> None:
 			else:
 				aligned[ref] += '~' + ali
 
-	with gzip.open(path, 'wt') as fp:
+	with gzip.open(f'{odir}/{name}.ftx.gz', 'wt') as fp:
 		for ref in refs:
 			if ref in aligned:
 				print(ref, aligned[ref], sep='\t', file=fp)

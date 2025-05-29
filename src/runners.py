@@ -21,7 +21,7 @@ READSFILE = "reads.fa"
 
 
 # List of all programs to be used in the bakeoff
-configfp = open("src/0config.json")
+configfp = open("src/00CONFIG.json")
 BAKEPROGS = json.load(configfp)
 
 ###########
@@ -182,14 +182,18 @@ class Program:
 
 		result = tools.run(self.cli)
 
-		tmpfp = self.direc + '/' + 'tmp--' + self.name #ugly. untested.
+		#create output files, redo to have path designation in function.
+		tmpfp = self.direc + '/' + 'tmp--' + self.name #ugly.
 		ftxfp = self.direc + '/' + 'ftx--' + self.name # ugly untested
 		if self.name == 'pblat': #actually vomit inducing
 			files.sim4file_to_ftxfile(tmpfp, ftxfp)
 
 		else:
 			files.samfile_to_ftxfile(tmpfp, ftxfp)
-		return 0
+
+		# Generate final output
+		files.reportalignments(READSFILE, ftxfp, self.name, self.direc)
+
 
 	def fromdict(self, dic):
 		self.name = dic['name']
