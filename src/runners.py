@@ -320,7 +320,7 @@ class Run:
 
 		if not self.Arguments.d:
 			logging.info('Cleaning up temporary files.')
-			files.cleanup(self.Arguments.dir)
+			files.cleanup(self.Arguments.dir, READSFILE, GENOMEFILE)
 
 	def report(self):
 		self._checks['ran']()

@@ -45,12 +45,15 @@ def cigar_to_exons(cigar, pos):
 	return exons
 
 
-def cleanup(odir: str):
+def cleanup(odir: str, readfile: str, genomfile: str):
+	datafiles = [readfile, genomfile]
 	with os.scandir(os.path.abspath(odir)) as builddir:
 		for file in builddir:
-			if file.is_file() and not file.name.endswith('ftx.gz'):
+			is_file_target = file.is_file() and file.name not in datafiles and not file.name.endswith('ftx.gz')
+			is_dir_target = file.is_dir()
+			if is_file_target:
 				os.unlink(file.path)
-			elif file.is_dir():
+			elif is_dir_target:
 				shutil.rmtree(file.path)
 
 def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
@@ -70,6 +73,7 @@ def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
 		beg = coor[0]
 		seen = 0
 		#tools.progressbar(i, len(rna) - size + 1, prefix = 'Simulation:', suffix = 'Complete', length = 50)
+		#print('lmao', end='/r')
 		for j in range(size -1):
 			d = coor[j+1] - coor[j]
 			if d > 1:

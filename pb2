@@ -5,7 +5,9 @@ import os
 import runners
 import watchdogs
 import sys
+import faulthandler
 
+faulthandler.enable()
 #############
 # FUNCTIONS #
 #############
