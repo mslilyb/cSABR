@@ -1,0 +1,11 @@
+program	 match	partial	wrong	unaligned
+STAR	3010	1160	1394	0	
+bbmap	0	0	5564	0	
+bowtie2	0	0	1182	4382	
+gem3-mapper	0	0	5313	251	
+hisat2	4140	644	644	136	
+magicblast	930	0	4634	0	
+minimap2	1002	1416	2762	384	
+pblat	2128	1418	2018	0	
+segemehl	2302	1236	1989	37	
+subread	0	0	5514	50	

@@ -1,0 +1,11 @@
+program	 match	partial	wrong	unaligned
+STAR	284486	0	0	0	
+bbmap	274800	0	9686	0	
+bowtie2	284486	0	0	0	
+gem3-mapper	274800	0	9686	0	
+hisat2	284480	0	6	0	
+magicblast	284486	0	0	0	
+minimap2	284485	1	0	0	
+pblat	284486	0	0	0	
+segemehl	284486	0	0	0	
+subread	284486	0	0	0	
