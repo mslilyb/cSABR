@@ -45,6 +45,14 @@ def cigar_to_exons(cigar, pos):
 	return exons
 
 
+def cleanup(odir: str):
+	with os.scandir(os.path.abspath(odir)) as builddir:
+		for file in builddir:
+			if file.is_file() and not file.name.endswith('ftx.gz'):
+				os.unlink(file.path)
+			elif file.is_dir():
+				shutil.rmtree(file.path)
+
 def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
 	# create indexes
 	dna: list[int] = [] # dna positional index
@@ -147,7 +155,7 @@ def readfasta(filename) -> Generator[tuple, None, None]:
 
 
 def reportalignments(reads: str, ftx: str, odir: str, name: str) -> None:
-	refs: list[str] = [name for name, seq in readfasta(reads)]
+	refs: list[str] = [name for name, seq in readfasta(f'{odir}/{reads}')]
 	aligned: dict[str,str] = {}
 
 	with getfp(ftx) as fp:

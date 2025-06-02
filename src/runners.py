@@ -188,11 +188,14 @@ class Program:
 		if self.name == 'pblat': #actually vomit inducing
 			files.sim4file_to_ftxfile(tmpfp, ftxfp)
 
+		elif self.name == 'STAR':
+			files.samfile_to_ftxfile(tmpfp + '/Aligned.out.sam', ftxfp)
+
 		else:
 			files.samfile_to_ftxfile(tmpfp, ftxfp)
 
 		# Generate final output
-		files.reportalignments(READSFILE, ftxfp, self.name, self.direc)
+		files.reportalignments(READSFILE, ftxfp, self.direc, self.name)
 
 
 	def fromdict(self, dic):
@@ -311,6 +314,13 @@ class Run:
 			prog.execute(self.Arguments.dry)
 
 		self.status['run_done'] = True
+
+	def makeclean(self):
+		self._checks['ran']()
+
+		if not self.Arguments.d:
+			logging.info('Cleaning up temporary files.')
+			files.cleanup(self.Arguments.dir)
 
 	def report(self):
 		self._checks['ran']()

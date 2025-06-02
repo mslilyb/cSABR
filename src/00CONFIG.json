@@ -70,20 +70,20 @@
     },
     "STAR": {
         "name": "STAR",
-        "cli": "apptainer run --bind ./{odir}:/mnt sifs/STAR.sif --genomeDir {genome}--star --readFilesIn {reads} --readFilesCommand 'gunzip -c' --outFileNamePrefix /mnt/tmp--STAR --runThreadN 1",
+        "cli": "apptainer run --bind ./{odir}:/mnt sifs/STAR.sif --genomeDir /mnt/{genome}--star --readFilesIn /mnt/{reads} --readFilesCommand 'cat' --outFileNamePrefix /mnt/tmp--STAR/ --runThreadN 1",
         "init": {
             "file_exists": {
-                "{genome}--star": "apptainer run --bind ./{odir}:/mnt sifs/STAR.sif --runMode genomeGenerate --genomeDir {genome}-star --genomeFastaFile {genome} --genomeSAindexNbases 8"
+                "{genome}--star": "apptainer run --bind ./{odir}:/mnt sifs/STAR.sif --runMode genomeGenerate --genomeDir /mnt/{genome}--star --genomeFastaFiles /mnt/{genome} --genomeSAindexNbases 8 --outFileNamePrefix /mnt/"
             }
         },
         "reqs": []
     },
     "subread": {
         "name": "subread",
-        "cli": "apptainer run --bind ./{odir}:/mnt sifs/subread.sif -i {genome} -r {reads} -t 0 --SAMoutput --multiMapping -B 5 -T {thr} -o /mnt/tmp--subread",
+        "cli": "apptainer run --bind ./{odir}:/mnt sifs/subread.sif -i /mnt/{genome} -r /mnt/{reads} -t 0 --SAMoutput --multiMapping -B 5 -T {thr} -o /mnt/tmp--subread",
         "init": {
             "file_exists": {
-                "{genome}.00.b.tab": "apptainer exec --bind ./{odir}:/mnt sifs/subread.sif subread-buildindex -o {genome} {genome}"
+                "{genome}.00.b.tab": "apptainer exec --bind ./{odir}:/mnt sifs/subread.sif subread-buildindex -o /mnt/{genome} /mnt/{genome}"
             }
         },
         "reqs": []

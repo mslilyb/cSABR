@@ -2,8 +2,9 @@
 
 import argparse
 import os
-import src.runners as runners
-import src.watchdogs as watchdogs
+import runners
+import watchdogs
+import sys
 
 #############
 # FUNCTIONS #
@@ -88,9 +89,10 @@ srcpath = basepath + "/src"
 args = parser.parse_args()
 
 # Enable Stack Trace
+'''
 if args.d:
 	sys.settrace()
-
+'''
 # Init output directory
 os.makedirs(args.dir, exist_ok=True)
 
@@ -101,3 +103,4 @@ bakeoff = runners.Run(args)
 # Run tests
 
 bakeoff.do_run()
+bakeoff.makeclean()

@@ -66,6 +66,8 @@ def verifyprograms(progs, BAKEPROGS):
 # with run-aligner.py, but not forever. Returns list of valid programs, throws
 # an error and exits if none remain after checking.
 
+
+#### NEEDS DEBUGGING
 def noverwritten(prgs, builddir):
 	for prg in prgs:
 		if path.isfile(builddir + "/" + prg + ".ftx.gz"):
@@ -78,3 +80,5 @@ def noverwritten(prgs, builddir):
 		sys.exit(1)
 
 	return prgs
+
+####
