@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+import argparse
+import gzip
+
+def compare_ftx(ftx_file):
+    
+   # Compare ground-truth vs. alignment output in a .ftx file,
+   # checking only coordinates and strand.
+
+    total = 0 
+    coords_matches = 0
+    strand_matches = 0
+    mismatches = []
+
+    with gzip.open(ftx_file, 'rt') as fp:
+        for linenumb, line in enumerate(fp):
+            parts = line.strip().split('\t')
+            if len(parts) < 2:
+                continue
+
+            true_raw, oput_raw = parts[0], parts[1]
+            tp = true_raw.split('|')
+            op = oput_raw.split('|')
+
+            # Establish ground truth
+            truth_coords = tp[3] if len(tp) > 3 else ''
+            raw_strand   = tp[4] if len(tp) > 4 else ''
+            truth_strand = raw_strand.lstrip('r')  # drop leading 'r'
+
+            # Make program output values
+            out_strand = op[2] if len(op) > 2 else ''
+            out_coords = op[3] if len(op) > 3 else ''
+
+            total += 1
+            coords_ok = (truth_coords == out_coords)
+            strand_ok = (truth_strand == out_strand)
+
+            coords_matches += coords_ok
+            strand_matches += strand_ok
+
+            if not (coords_ok and strand_ok):
+                mismatches.append({
+                    'line': linenumb,
+                    'truth_coords': truth_coords,
+                    'out_coords': out_coords,
+                    'truth_strand': truth_strand,
+                    'out_strand': out_strand,
+                    'coords_ok': coords_ok,
+                    'strand_ok': strand_ok
+                })
+
+    # Print summary
+    print(f"Total records: {total}")
+    print(f"Coordinate matches: {coords_matches}/{total} ({coords_matches/total*100:.2f}%)")
+    print(f"Strand matches:     {strand_matches}/{total} ({strand_matches/total*100:.2f}%)")
+
+    # List mismatches
+    if mismatches:
+        print("\nMismatches:")
+        for m in mismatches:
+            print(
+                f"  line {m['line']}: "
+                f"coords {m['truth_coords']}→{m['out_coords']}, "
+                f"strand {m['truth_strand']}→{m['out_strand']} ({m['strand_ok']})"
+            )
+
+parser = argparse.ArgumentParser(description="Compare coords and strand in a .ftx file")
+parser.add_argument("ftx_file",help="Path to the .ftx file containing truth and output columns")
+
+args = parser.parse_args()
+compare_ftx(args.ftx_file)
