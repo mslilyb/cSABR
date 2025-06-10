@@ -114,6 +114,8 @@ def getfp(filename) -> TextIOWrapper:
 
 def needfastq(readfile) -> str:
 	fastq: str = f'{readfile[0:readfile.find(".")]}.fq.gz'
+	output: str = None
+
 	print(fastq.split('/')[1])
 	if not os.path.exists(fastq):
 		with gzip.open(fastq, 'wt') as fp:
@@ -123,7 +125,11 @@ def needfastq(readfile) -> str:
 				print(seq, file=fp)
 				print('+', file=fp)
 				print('J' * len(seq), file=fp)
-	return fastq.split('/')[1]
+
+	for field in fastq.split('/'):
+		if field.endswith('.fq.gz'):
+			output = field
+	return output
 
 
 def needfasta(readfile) -> str:
