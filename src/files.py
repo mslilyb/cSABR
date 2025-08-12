@@ -22,7 +22,7 @@ sbf = TypeVar('sbf', bound='SAMbitflag')
 # FUNCTIONS #
 #############
 
-def cigar_to_exons(cigar, pos):
+def cigar_to_exons(cigar, pos) -> list:
 	"""converts cigar strings to exon coorinates"""
 	exons = []
 	beg = 0
@@ -45,7 +45,7 @@ def cigar_to_exons(cigar, pos):
 	return exons
 
 
-def cleanup(odir: str, readfile: str, genomfile: str):
+def cleanup(odir: str, readfile: str, genomfile: str) -> None:
 	datafiles = [readfile, genomfile]
 	with os.scandir(os.path.abspath(odir)) as builddir:
 		for file in builddir:
@@ -218,7 +218,7 @@ def sim4file_to_ftxfile(filename: str, ftxfile) -> None:
 			print(ftx, file=out)
 
 
-def sam_to_ftx(filename):
+def sam_to_ftx(filename) -> Generator[tuple, None, None]:
 	"""generates ftx objects from sam file"""
 	n = 0
 	with open(filename, errors='ignore') as fp:
