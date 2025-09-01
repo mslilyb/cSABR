@@ -182,3 +182,7 @@ sifs/
 
 # Ignore temporary files
 *.tmp
+
+# Ignore large data files
+genome.fa
+reads.fa

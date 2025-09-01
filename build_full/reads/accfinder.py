@@ -1,5 +1,6 @@
 from copy import deepcopy
 import matplotlib.pyplot as plt
+import os
 import sys
 
 def gapfinder(ground, weg):
@@ -23,6 +24,8 @@ def gapfinder(ground, weg):
 
 file = sys.argv[1]
 pname = file.split('_')[0]
+
+strands = ['+','-']
 
 acc = 0
 tot = 0
@@ -60,7 +63,7 @@ with open(file, 'rt') as fp:
 		gt = fields[0].split(',')
 
 		
-		exp = fields[1].split(',')
+		exp = fields[3].split(',')
 
 		if len(gt) == 1:
 			case = 'ungap'
@@ -78,6 +81,8 @@ with open(file, 'rt') as fp:
 			gt[i] = tuple([int(n) for n in gt[i].split('-')])
 
 		for i in range(len(exp)):
+			if exp[i] == 'None':
+				continue
 			exp[i] = tuple([int(n) for n in exp[i].split('-')])
 
 		wegood = True
@@ -89,7 +94,9 @@ with open(file, 'rt') as fp:
 					wegood = False
 		
 		if case == 'ungap':
-			offset = gt[0][0] - exp[0][0]
+			offset = 'unaligned'
+			if exp[0] != 'None':
+				offset = gt[0][0] - exp[0][0]
 			cases[case]['offsets'].append(offset)
 			
 
@@ -110,17 +117,17 @@ with open(file, 'rt') as fp:
 			cases[case]['succ'] += 1
 			acc += 1
 
-'''
+
 print('raw accuracy:', acc/tot)
 print('ungapped accuracy:', cases['ungap']['succ'] / len(cases['ungap']['offsets']))
 print('gapped accuracy:', cases['gapped']['succ'] / len(cases['gapped']['gaps']))
 print('internal exon accuracy:', cases['iexon']['succ'] / len(cases['iexon']['iexs']))
-'''
+
 
 #Plots
 #gapsize vs match, average min gap size...?
 # hacky. 5' first
-
+'''
 match = []
 mmatch = []
 
@@ -173,7 +180,8 @@ for i in range(1, 51):
 		tres.append(0)
 		continue
 	tres.append((hits/(hits + misses)) * 100)
-
+'''
+'''
 fig, ax = plt.subplots()
 
 l1, = ax.plot(fsizes, fres, 'r-')
@@ -184,3 +192,4 @@ ax.set_xlabel('overhang length')
 ax.set_ylabel('percent correct alignments')
 ax.set_title(pname)
 fig.savefig(f'plots/full{pname}.png')
+'''
