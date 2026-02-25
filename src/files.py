@@ -95,6 +95,9 @@ def genmaker(fastafile, ftxfile) -> Generator[tuple, None, None]:
 	ftx_table: dict[str,ftxo] = {}
 	fp = getfp(ftxfile)
 	for line in fp:
+		if not line.startswith('>'):
+			continue
+
 		ftx = FTX.parse(line.rstrip())
 		if ftx.chrom not in ftx_table: ftx_table[ftx.chrom] = []
 		ftx_table[ftx.chrom].append(ftx)
@@ -184,14 +187,14 @@ def reportalignments(reads: str, ftx: str, odir: str, name: str) -> None:
 				print(ref, 'None', sep='\t', file=fp)
 
 
-def sim4file_to_ftxfile(filename: str, ftxfile) -> None:
+def sim4file_to_ftxfile(filename: str, ftxfile: str) -> None:
 	chrom = None
 	strand = None
 	exons = []
 	ref = None
 	n = 0
 	with open(filename) as fp:
-		with open(ftxfile, 'w') as out:
+		with open(ftxfile, 'wt') as out:
 			for line in fp:
 				if line.startswith('seq1 ='):
 					if chrom is not None:
@@ -308,8 +311,12 @@ class FTX:
 		assert('|' not in name)
 		assert(' ' not in name)
 		assert(strand == '+' or strand == '-')
-		for beg, end in exons: assert(beg <= end)
-		for i in range(len(exons) -1): assert(exons[i][0] < exons[i+1][0])
+		if len(exons) == 2:
+			beg, end = exons
+			assert(beg <= end)
+		else:
+			for beg, end in exons: assert(beg <= end)
+			for i in range(len(exons) -1): assert(exons[i][0] < exons[i+1][0])
 
 		self.chrom = chrom
 		self.beg = exons[0][0]

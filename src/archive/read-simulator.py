@@ -8,8 +8,14 @@ def generate_reads(gftx, chrom, size):
 	# create indexes
 	dna = [] # dna positional index
 	rna = [] # rna sequence
-	for beg, end in gftx.exons:
-		for i in range(end - beg + 1):
+	try:
+		for beg, end in gftx.exons:
+			for i in range(end - beg + 1):
+				coor = i + beg
+				dna.append(coor)
+				rna.append(chrom[coor])
+	except:
+		for i in range(gftx.end - gftx.beg + 1):
 			coor = i + beg
 			dna.append(coor)
 			rna.append(chrom[coor])
