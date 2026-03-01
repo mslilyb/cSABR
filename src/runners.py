@@ -99,7 +99,8 @@ class Program:
 		
 		
 	def __str__(self) -> str:
-		"""seStringify a Program object, returning a string with each independent parameter on a single line.
+		"""
+		Stringify a Program object, returning a string with each independent parameter on a single line.
 		"""
 		return f'Name: {self.name}\ncli: {self.cli}\ninits: {self.init}\nAdditional Requirements: {self.reqs}'
 
@@ -159,10 +160,8 @@ class Program:
 		if 'need_format' in self.init.keys():
 			if self.init['need_format'] == 'fasta':
 				logging.info(f'{self.name} requires fasta format files. Reformatting.')
-				if not is_dry and READSFILE == "reads.fa":
+				if not is_dry:
 					self._extras['fasta'] = files.needfasta(f'{self.direc}/{READSFILE}')
-				else:
-					self._extras['fasta'] = files.needfasta(os.path.abspath(READSFILE))
 			if self.init['need_format'] == 'fastq':
 				logging.info(f'{self.name} requires fastq format files. Reformatting.')
 				if not is_dry:
@@ -287,10 +286,7 @@ class Run:
 
 	def _makefiles(self):
 		newfastap = f'{os.path.abspath(self.Arguments.dir)}/{GENOMEFILE}'
-		if self.Arguments.nosim: READSFILE = os.path.abspath(self.Arguments.ftx)
-		else:
-			READSFILE = 'reads.fa'
-			newreadsp = f'{os.path.abspath(self.Arguments.dir)}/{READSFILE}'
+		newreadsp = f'{os.path.abspath(self.Arguments.dir)}/{READSFILE}'
 		logging.info(f'Preparing {newfastap}')
 
 		if not self.Arguments.dry:

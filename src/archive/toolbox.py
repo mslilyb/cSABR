@@ -33,12 +33,8 @@ class FTX:
 		assert('|' not in name)
 		assert(' ' not in name)
 		assert(strand == '+' or strand == '-')
-		if len(exons) == 2:
-			beg, end = exons
-			assert(beg <= end)
-		else:
-			for beg, end in exons: assert(beg <= end)
-			for i in range(len(exons) -1): assert(exons[i][0] < exons[i+1][0])
+		for beg, end in exons: assert(beg <= end)
+		for i in range(len(exons) -1): assert(exons[i][0] < exons[i+1][0])
 
 		self.chrom = chrom
 		self.beg = exons[0][0]
@@ -102,10 +98,7 @@ class FTX:
 
 	def text(self):
 		"""text-based version of ftx, 1-based"""
-		if len(self.exons) == 2:
-			estr = f'{self.beg+1}-{self.end+1}'
-		else:
-			estr = ','.join([f'{beg+1}-{end+1}' for beg, end in self.exons])
+		estr = ','.join([f'{beg+1}-{end+1}' for beg, end in self.exons])
 		return '|'.join((self.chrom, self.name, self.strand, estr, self.info))
 
 	def __str__(self):

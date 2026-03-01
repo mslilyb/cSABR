@@ -46,7 +46,6 @@ parser.add_argument('--double', action='store_true',
 parser.add_argument('--noncanonical', action='store_true',
 	help='include non-canonical splice sites')
 parser.add_argument('--debug', action='store_true')
-parser.add_argument('--nosplice', action='store_true', help='create an genome that expects ungapped alignments')
 arg = parser.parse_args()
 
 # SETUP
@@ -65,7 +64,6 @@ if arg.seed: random.seed(arg.seed)
 
 sites = ['GTAG']
 if arg.noncanonical: sites.extend(['GCAG', 'ATAC', 'AATT'])
-if arg.nosplice: sites = ['unspliced']
 strands = ['+']
 if arg.double: strands.append('-')
 
@@ -82,23 +80,14 @@ for c in range(arg.chroms):
 		for strand in strands:
 			for site in sites:
 				f1 = random_flank(arg.flank, arg.debug)
-				f2 = random_flank(arg.flank, arg.debug)
 				e1 = random_exon(arg.exon, arg.debug)
-				e1b = len(f1) + off
-				e1e = e1b + len(e1)				
-				if arg.nosplice:
-					exons = (e1b, e1e - 1)
-					print(exons)
-					seq = f1 + e1 + f2
-					off += len(seq)
-					print(seq, file=fa)
-					ftx = FTX(chrom, f'{i}:{site}', strand, exons, '')
-					print(ftx, file=fx)
-					continue
 				i1 = random_intron(arg.intron, site, strand, arg.debug)
 				ve = random_exon(i, arg.debug)
 				i2 = random_intron(arg.intron, site, strand, arg.debug)
 				e2 = random_exon(arg.exon, arg.debug)
+				f2 = random_flank(arg.flank, arg.debug)
+				e1b = len(f1) + off
+				e1e = e1b + len(e1)
 				evb = e1e + len(i1)
 				eve = evb + len(ve)
 				e2b = eve + len(i2)
