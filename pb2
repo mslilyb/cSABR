@@ -78,6 +78,10 @@ parser.add_argument('-d', action='store_true', help='Enable debug mode, \
 	keeping temporary files.')
 parser.add_argument('-y', '--dry', action='store_true', help='Do a dry run. \
 	Prints steps that would be taken')
+parser.add_argument('-r', '--reversed', action='store_true', help='Reverse \
+	order of reads file.')
+parser.add_argument('-u', '--shuffled', action='store_true', help='Shuffle \
+	the order of the reads file.')
 
 #########
 # SETUP #

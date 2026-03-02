@@ -303,7 +303,10 @@ class Run:
 				sreads = 0.1
 			print('simulating reads')
 			files.simulatereads(newfastap, self.Arguments.ftx, self.Arguments.seed, samplegenes = sgenes, samplereads = sreads, double = True, outf = newreadsp)
-
+			if self.Arguments.reversed:
+				files.reversefasta(newreadsp)
+			if self.Arguments.shuffled:
+				files.shufflefasta(newreadsp)
 
 	# Public methods
 	def do_run(self):

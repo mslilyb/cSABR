@@ -103,16 +103,16 @@ def genmaker(fastafile, ftxfile) -> Generator[tuple, None, None]:
 		if chrom in ftx_table: yield chrom, seq, ftx_table[chrom]
 
 
-def getfp(filename) -> TextIOWrapper:
+def getfp(filename:str) -> TextIOWrapper:
 	"""
-	Opens a file dependent on suffix. Returns a file object.
+	Opens a file dependent on suffix. Returns a file object. Needs option to change flags.
 	"""
 	if   filename.endswith('.gz'): return gzip.open(filename, 'rt')
 	elif filename == '-':          return sys.stdin
 	else:                          return open(filename)
 
 
-def needfastq(readfile) -> str:
+def needfastq(readfile:str) -> str:
 	fastq: str = f'{readfile[0:readfile.find(".")]}.fq.gz'
 	output: str = None
 
@@ -132,7 +132,7 @@ def needfastq(readfile) -> str:
 	return output
 
 
-def needfasta(readfile) -> str:
+def needfasta(readfile:str) -> str:
 	uzipfa = readfile[:-3]
 	statement = not os.path.exists(uzipfa)
 	print(statement)
@@ -184,6 +184,72 @@ def reportalignments(reads: str, ftx: str, odir: str, name: str) -> None:
 				print(ref, 'None', sep='\t', file=fp)
 
 
+def reversefasta(fastafile:str) -> None:
+	"""Reverses order of fasta file entries. Memory inefficient"""
+	namelist:list[str] = []
+	records:dict[str,str] = {}
+
+	for defline, seq in readfasta(fastafile):
+		records[defline] = seq
+		namelist.append(defline)
+
+	with open(fastafile, 'wt') as outfp:
+		for name in reversed(namelist):
+			print(f'>{name}\n{records[name]}', file=outfp)
+
+def sam_to_ftx(filename) -> Generator[tuple, None, None]:
+	"""generates ftx objects from sam file"""
+	n = 0
+	with open(filename, errors='ignore') as fp:
+		for line in fp:
+			if line == '': break
+			if line.startswith('@'): continue
+			f = line.split('\t')
+			qname = f[0]
+			bf = SAMbitflag(f[1])
+			chrom = f[2]
+			pos   = int(f[3])
+			cigar = f[5]
+
+			st = '-' if bf.read_reverse_strand else '+'
+			if bf.read_unmapped: continue
+			if bf.otherflags:
+				print(bf.otherflags)
+				sys.exit('unexpected flags found, debug me')
+			n += 1
+			exons = cigar_to_exons(cigar, pos)
+			yield FTX(chrom, str(n), st, exons, f'~{qname}')
+
+
+def shufflefasta(filename:str, seed:int = None) -> None:
+	"""Reads in entire fasta file, then randomizes entries. Memory-inefficient"""
+	if seed != None:
+		random.seed(seed)
+
+	records: dict[str,str] = {}
+
+	for defline, seq in readfasta(filename):
+		records[defline] = seq
+
+	names = list(records.keys())
+
+	for n_index in reversed(range(len(names))):
+		swapout = names[n_index]
+
+		if n_index - 1 < 0:
+			swapin = 0
+
+		else:
+			swapin = random.randint(0, n_index - 1)
+
+		names[n_index] = names[swapin]
+		names[swapin] = swapout
+
+	with open(filename, 'wt') as outfp:
+		for name in names:
+			print(f'>{name}\n{records[name]}', file=outfp)
+
+
 def sim4file_to_ftxfile(filename: str, ftxfile) -> None:
 	chrom = None
 	strand = None
@@ -217,29 +283,6 @@ def sim4file_to_ftxfile(filename: str, ftxfile) -> None:
 			ftx = FTX(chrom, str(n), strand, exons, f'~{ref}')
 			print(ftx, file=out)
 
-
-def sam_to_ftx(filename) -> Generator[tuple, None, None]:
-	"""generates ftx objects from sam file"""
-	n = 0
-	with open(filename, errors='ignore') as fp:
-		for line in fp:
-			if line == '': break
-			if line.startswith('@'): continue
-			f = line.split('\t')
-			qname = f[0]
-			bf = SAMbitflag(f[1])
-			chrom = f[2]
-			pos   = int(f[3])
-			cigar = f[5]
-
-			st = '-' if bf.read_reverse_strand else '+'
-			if bf.read_unmapped: continue
-			if bf.otherflags:
-				print(bf.otherflags)
-				sys.exit('unexpected flags found, debug me')
-			n += 1
-			exons = cigar_to_exons(cigar, pos)
-			yield FTX(chrom, str(n), st, exons, f'~{qname}')
 
 #### NEEDS TESTING
 def samfile_to_ftxfile(filename,ftxpath):#
@@ -278,9 +321,7 @@ def simulatereads(fasta: str, ftx: str, seed: int, rlen: int = 100,
 					print('>', rftx, '-', sep='', file=out)
 					print(rseq, file=out)
 					reads += 1
-					bases += rlen
-
-				
+					bases += rlen				
 
 	print(f'genes: {genes}', f'reads: {reads}', f'bases: {bases}',
 		sep='\n', file=sys.stderr)
@@ -411,3 +452,16 @@ class SAMbitflag:
 		self.otherflags = []
 		for i in (1, 2, 4, 6, 7, 8, 10, 11):
 			if b[-i] == '1': self.otherflags.append(i)
+
+# This is for debugging
+if __name__ == '__main__':
+	import argparse
+
+	parser = argparse.ArgumentParser(description=f'Run individual functions \
+		from the files module.')
+
+	# To implement: an actual selectionmethod
+
+	fname = sys.argv[1]
+	#shufflefasta(fname, 6)
+	reversefasta(fname)
