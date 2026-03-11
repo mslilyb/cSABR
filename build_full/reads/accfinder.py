@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import os
 import sys
 
-def gapfinder(ground, weg):
-	g = deepcopy(gap)
+def gapfinder(ground, weg, ga):
+	g = deepcopy(ga)
 	fivep = ground[0][1] - ground[0][0] + 1
 	threep = ground[-1][1] - ground[-1][0] + 1
 	if fivep < threep:
@@ -103,12 +103,12 @@ with open(file, 'rt') as fp:
 		
 		elif case == 'gapped':
 
-			cases[case]['gaps'].append(gapfinder(gt, wegood))
+			cases[case]['gaps'].append(gapfinder(gt, wegood, gap))
 		
 
 		elif case == 'iexon':
 			ime = deepcopy(internal)
-			ime['gap'] = gapfinder(gt, wegood)
+			ime['gap'] = gapfinder(gt, wegood, gap)
 
 			ime['mesize'] = gt[1][1] - gt[1][0] + 1
 			cases[case]['iexs'].append(ime)

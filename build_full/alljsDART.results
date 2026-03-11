@@ -1,0 +1,4 @@
+raw accuracy: 0.8629039745244218
+ungapped accuracy: 0.9655800285427051
+gapped accuracy: 0.681818827506854
+internal exon accuracy: 0.19981617647058825

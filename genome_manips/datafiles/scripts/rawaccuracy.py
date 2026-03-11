@@ -42,6 +42,10 @@ for expfile in expfiles:
 			case = ''
 
 			exp, estr, obs, ostr = parse_resultline(line.rstrip())
+			print(exp, obs)
+
+			if exp == obs:
+				print("PERFECT")
 
 			# Determine case
 
