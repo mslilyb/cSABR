@@ -3,8 +3,12 @@ import matplotlib.pyplot as plt
 import os
 import sys
 
-def gapfinder(ground, weg, ga):
-	g = deepcopy(ga)
+def gapfinder(ground, weg, thing):
+	g = {
+	'size': 0,
+	'type': None,
+	'match': False
+	}
 	fivep = ground[0][1] - ground[0][0] + 1
 	threep = ground[-1][1] - ground[-1][0] + 1
 	if fivep < threep:
@@ -22,8 +26,7 @@ def gapfinder(ground, weg, ga):
 	g['match'] = weg
 	return g	
 
-file = sys.argv[1]
-pname = file.split('_')[0]
+files = sys.argv[1:]
 
 strands = ['+','-']
 
@@ -53,143 +56,152 @@ cases = {
 	}
 }
 
-with open(file, 'rt') as fp:
-	for line in fp:
-		tot += 1
-		fields = line.rstrip().split()
-		if line.count('\t') < 1:
-			continue
-
-		gt = fields[0].split(',')
-
-		
-		exp = fields[3].split(',')
-
-		if len(gt) == 1:
-			case = 'ungap'
-
-		elif len(gt) == 2:
-			case = 'gapped'
-
-		elif len(gt) == 3:
-			case = 'iexon'
-
-		else:
-			continue #Invalid length, something went wrong in ground truth.
-
-		for i in range(len(gt)):
-			gt[i] = tuple([int(n) for n in gt[i].split('-')])
-
-		for i in range(len(exp)):
-			if exp[i] == 'None':
+linetypes = ['-', '--', 'o', '-o'] #max 4
+pnames = [pn.split('_')[0] for pn in files]
+lines = []
+l = []
+fig, ax = plt.subplots()
+for file, pname in zip(files, pnames):
+	with open(file, 'rt') as fp:
+		for line in fp:
+			tot += 1
+			fields = line.rstrip().split()
+			if line.count('\t') < 1:
 				continue
-			exp[i] = tuple([int(n) for n in exp[i].split('-')])
 
-		wegood = True
-		if len(exp) != len(gt):
-			wegood = False
-		else:
-			for g, e in zip(gt, exp):
-				if g != e:
-					wegood = False
-		
-		if case == 'ungap':
-			offset = 'unaligned'
-			if exp[0] != 'None':
-				offset = gt[0][0] - exp[0][0]
-			cases[case]['offsets'].append(offset)
+			gt = fields[0].split(',')
+
+			
+			exp = fields[3].split(',')
+
+			if len(gt) == 1:
+				case = 'ungap'
+
+			elif len(gt) == 2:
+				case = 'gapped'
+
+			elif len(gt) == 3:
+				case = 'iexon'
+
+			else:
+				continue #Invalid length, something went wrong in ground truth.
+
+			for i in range(len(gt)):
+				gt[i] = tuple([int(n) for n in gt[i].split('-')])
+
+			for i in range(len(exp)):
+				if exp[i] == 'None':
+					continue
+				exp[i] = tuple([int(n) for n in exp[i].split('-')])
+
+			wegood = True
+			if len(exp) != len(gt):
+				wegood = False
+			else:
+				for g, e in zip(gt, exp):
+					if g != e:
+						wegood = False
+			
+			if case == 'ungap':
+				offset = 'unaligned'
+				if exp[0] != 'None':
+					offset = gt[0][0] - exp[0][0]
+				cases[case]['offsets'].append(offset)
+				
+
+			
+			elif case == 'gapped':
+				cases[case]['gaps'].append(gapfinder(gt, wegood, gap))
 			
 
-		
-		elif case == 'gapped':
+			elif case == 'iexon':
+				ime = deepcopy(internal)
+				ime['gap'] = gapfinder(gt, wegood, gap)
 
-			cases[case]['gaps'].append(gapfinder(gt, wegood, gap))
-		
+				ime['mesize'] = gt[1][1] - gt[1][0] + 1
+				cases[case]['iexs'].append(ime)
 
-		elif case == 'iexon':
-			ime = deepcopy(internal)
-			ime['gap'] = gapfinder(gt, wegood, gap)
-
-			ime['mesize'] = gt[1][1] - gt[1][0] + 1
-			cases[case]['iexs'].append(ime)
-
-		if wegood:
-			cases[case]['succ'] += 1
-			acc += 1
+			if wegood:
+				cases[case]['succ'] += 1
+				acc += 1
 
 
-print('raw accuracy:', acc/tot)
-print('ungapped accuracy:', cases['ungap']['succ'] / len(cases['ungap']['offsets']))
-print('gapped accuracy:', cases['gapped']['succ'] / len(cases['gapped']['gaps']))
-print('internal exon accuracy:', cases['iexon']['succ'] / len(cases['iexon']['iexs']))
+	print('raw accuracy:', acc/tot)
+	print('ungapped accuracy:', cases['ungap']['succ'] / len(cases['ungap']['offsets']))
+	print('gapped accuracy:', cases['gapped']['succ'] / len(cases['gapped']['gaps']))
+	print('internal exon accuracy:', cases['iexon']['succ'] / len(cases['iexon']['iexs']))
 
-
-#Plots
-#gapsize vs match, average min gap size...?
-# hacky. 5' first
 '''
-match = []
-mmatch = []
+	#Plots
+	#gapsize vs match, average min gap size...?
+	# hacky. 5' first
+	match = []
+	mmatch = []
 
-for ga in cases['gapped']['gaps']:
-	if ga['type'] != 'five':
-		continue
+	for ga in cases['gapped']['gaps']:
+		if ga['type'] != 'five':
+			continue
 
-	if ga['match']:
-		match.append(ga['size'])
-	else:
-		mmatch.append(ga['size'])
+		if ga['match']:
+			match.append(ga['size'])
+		else:
+			mmatch.append(ga['size'])
 
-fsizes = []
-fres = []
+	fsizes = []
+	fres = []
 
-for i in range(1, 51):
-	fsizes.append(i)
+	for i in range(1, 51):
+		fsizes.append(i)
 
-	hits = match.count(i)
-	misses = mmatch.count(i)
+		hits = match.count(i)
+		misses = mmatch.count(i)
 
-	if hits + misses == 0:
-		fres.append(0)
-		continue
+		if hits + misses == 0:
+			fres.append(0)
+			continue
 
-	fres.append((hits/(hits + misses)) * 100)
+		fres.append((hits/(hits + misses)) * 100)
 
-match = []
-mmatch = []
+	match = []
+	mmatch = []
 
-for ga in cases['gapped']['gaps']:
-	if ga['type'] != 'three':
-		continue
+	for ga in cases['gapped']['gaps']:
+		if ga['type'] != 'three':
+			continue
 
-	if ga['match']:
-		match.append(ga['size'])
-	else:
-		mmatch.append(ga['size'])
+		if ga['match']:
+			match.append(ga['size'])
+		else:
+			mmatch.append(ga['size'])
 
-tsizes = []
-tres = []
+	tsizes = []
+	tres = []
 
-for i in range(1, 51):
-	tsizes.append(i)
+	for i in range(1, 51):
+		tsizes.append(i)
 
-	hits = match.count(i)
-	misses = mmatch.count(i)
+		hits = match.count(i)
+		misses = mmatch.count(i)
 
-	if hits + misses == 0:
-		tres.append(0)
-		continue
-	tres.append((hits/(hits + misses)) * 100)
-'''
-'''
-fig, ax = plt.subplots()
+		if hits + misses == 0:
+			tres.append(0)
+			continue
+		tres.append((hits/(hits + misses)) * 100)
+	lines.append((fsizes, fres, tsizes, tres, pname))
 
-l1, = ax.plot(fsizes, fres, 'r-')
-l2, = ax.plot(tsizes, tres, 'b-')
-ax.legend((l1, l2), ("5'", "3'"), loc='upper left', shadow=True)
+
+	linetype = linetypes[files.index(file)]
+	#l1, = ax.plot(fsizes, fres, 'r-', linestyle=linetype)
+	#l2, = ax.plot(tsizes, tres, 'b-', linestyle=linetype)
+	l.append((ax.plot(fsizes, fres, f'r{linetype}'),))
+	l.append((ax.plot(tsizes, tres, f'b{linetype}'),))
+
+
+ax.legend(tuple(l), labels=(f'5\'DART', f'3\'DART', f'5\'STAR', f'3\'STAR'), loc='upper left', shadow=True)
 ax.axis((1,50,0,100 ))
 ax.set_xlabel('overhang length')
 ax.set_ylabel('percent correct alignments')
-ax.set_title(pname)
-fig.savefig(f'plots/full{pname}.png')
+
+ax.set_title(f'Compare:{files}')
+fig.savefig(f'plots/fullcomparison.png')
 '''
