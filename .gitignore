@@ -186,3 +186,4 @@ sifs/
 # Ignore large data files
 genome.fa
 reads.fa
+*.sam

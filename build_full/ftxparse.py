@@ -34,6 +34,7 @@ for entry in os.scandir(path):
 			ejunc = 'None'
 			erstrand = 'None'
 
+			print(exper)
 			if '|' in exper:
 				ejunc = efields[3]
 				erstrand = efields[2]
