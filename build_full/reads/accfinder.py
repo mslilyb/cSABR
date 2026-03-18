@@ -30,8 +30,7 @@ files = sys.argv[1:]
 
 strands = ['+','-']
 
-acc = 0
-tot = 0
+
 gap = {
 	'size': 0,
 	'type': None,
@@ -39,22 +38,11 @@ gap = {
 }
 internal = {
 	'gap': None,
-	'mesize': 0
+	'lcoords': None,
+	'rcoords': None
 }
-cases = {
-	'ungap': {
-		'offsets': [],
-		'succ': 0,
-	},
-	'gapped': {
-		'gaps': [],
-		'succ': 0
-	},
-	'iexon': {
-		'iexs': [],
-		'succ': 0
-	}
-}
+
+
 
 linetypes = ['-', '--', 'o', '-o'] #max 4
 pnames = [pn.split('_')[0] for pn in files]
@@ -63,6 +51,26 @@ l = []
 fig, ax = plt.subplots()
 for file, pname in zip(files, pnames):
 	with open(file, 'rt') as fp:
+		cases = {
+			'ungap': {
+				'offsets': [],
+				'succ': 0,
+			},
+			'gapped': {
+				'gaps': [],
+				'succ': 0
+			},
+			'iexon': {
+				'iexs': [],
+				'succ': 0
+			}
+		}
+
+		acc = 0
+		tot = 0
+		max_intlen = 0
+		curr_intlen = 0
+
 		for line in fp:
 			tot += 1
 			fields = line.rstrip().split()
@@ -118,18 +126,30 @@ for file, pname in zip(files, pnames):
 				ime = deepcopy(internal)
 				ime['gap'] = gapfinder(gt, wegood, gap)
 
-				ime['mesize'] = gt[1][1] - gt[1][0] + 1
+				#if len(exp) > 2 and (gt[1][0] != exp[1][0] or gt[1][1] != exp[1][1]): print(gt[1][0], gt[1][1], exp[1][0], exp[1][1])
+				ime['lcoords'] = (gt[1][0], exp[1][0])
+				ime['rcoords'] = (gt[1][1], exp[1][1])
+				curr_intlen = gt[1][1] - gt[1][0] + 1
+				max_intlen = max(max_intlen, curr_intlen)
 				cases[case]['iexs'].append(ime)
 
 			if wegood:
 				cases[case]['succ'] += 1
 				acc += 1
 
-
+	"""
 	print('raw accuracy:', acc/tot)
 	print('ungapped accuracy:', cases['ungap']['succ'] / len(cases['ungap']['offsets']))
 	print('gapped accuracy:', cases['gapped']['succ'] / len(cases['gapped']['gaps']))
 	print('internal exon accuracy:', cases['iexon']['succ'] / len(cases['iexon']['iexs']))
+	"""
+	inp = []
+	innonp = []
+	indet = []
+	inundet = []
+
+	#for ie in cases['iexon']['iexs']:
+	print(max_intlen)
 
 '''
 	#Plots
@@ -137,6 +157,10 @@ for file, pname in zip(files, pnames):
 	# hacky. 5' first
 	match = []
 	mmatch = []
+	inmatch = []
+	inmmatch = []
+
+	for ie in cases['iexon']['iexs']:
 
 	for ga in cases['gapped']['gaps']:
 		if ga['type'] != 'five':
