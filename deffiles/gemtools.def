@@ -1,0 +1,16 @@
+BootStrap: library
+From: ubuntu:22.04
+
+%files
+	/home/alrescha/sourcerepos/gemtools /align
+
+%post
+	apt-get update && apt-get install -y make gcc libbz2-dev
+	mkdir -p align
+	cd /align
+	make dist
+
+%runscript
+	cd /align/bin
+	exec ./gem-mapper "$@"
+

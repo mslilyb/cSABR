@@ -24,7 +24,13 @@ def gapfinder(ground, weg, thing):
 	g['type'] = typ
 	g['size'] = siz
 	g['match'] = weg
-	return g	
+	return g
+
+def evaluate_strands(casedict):
+	if casedict['gap']['match']:
+		return 1
+	else:
+		return 0
 
 files = sys.argv[1:]
 
@@ -39,7 +45,8 @@ gap = {
 internal = {
 	'gap': None,
 	'lcoords': None,
-	'rcoords': None
+	'rcoords': None,
+	'missed': True
 }
 
 
@@ -72,6 +79,7 @@ for file, pname in zip(files, pnames):
 		curr_intlen = 0
 
 		for line in fp:
+			missed_exon = False
 			tot += 1
 			fields = line.rstrip().split()
 			if line.count('\t') < 1:
@@ -103,8 +111,13 @@ for file, pname in zip(files, pnames):
 				exp[i] = tuple([int(n) for n in exp[i].split('-')])
 
 			wegood = True
+
 			if len(exp) != len(gt):
+				if case == 'iexon':
+					missed_exon = True
+
 				wegood = False
+
 			else:
 				for g, e in zip(gt, exp):
 					if g != e:
@@ -127,15 +140,18 @@ for file, pname in zip(files, pnames):
 				ime['gap'] = gapfinder(gt, wegood, gap)
 
 				#if len(exp) > 2 and (gt[1][0] != exp[1][0] or gt[1][1] != exp[1][1]): print(gt[1][0], gt[1][1], exp[1][0], exp[1][1])
-				ime['lcoords'] = (gt[1][0], exp[1][0])
-				ime['rcoords'] = (gt[1][1], exp[1][1])
-				curr_intlen = gt[1][1] - gt[1][0] + 1
+				if not missed_exon:
+					ime['missed'] = False
+					ime['lcoords'] = (gt[1][0], exp[1][0])
+					ime['rcoords'] = (gt[1][1], exp[1][1])
+					curr_intlen = gt[1][1] - gt[1][0] + 1
 				max_intlen = max(max_intlen, curr_intlen)
 				cases[case]['iexs'].append(ime)
 
 			if wegood:
 				cases[case]['succ'] += 1
 				acc += 1
+
 
 	"""
 	print('raw accuracy:', acc/tot)
@@ -147,9 +163,9 @@ for file, pname in zip(files, pnames):
 	innonp = []
 	indet = []
 	inundet = []
-
-	#for ie in cases['iexon']['iexs']:
-	print(max_intlen)
+	
+	for ie in cases['iexon']['iexs']:
+		ietot += evaluate_strands(ie)
 
 '''
 	#Plots

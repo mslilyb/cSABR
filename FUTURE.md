@@ -33,3 +33,8 @@
 				- For programs that usually miss, what causes a hit and vice versa?
 				- Synthetic Genomes and how they affect results.
 				- Is there strand or polarity bias
+
+4. FTX handling overhaul
+	- Refactor code and redesign output for long term useability
+		- Namely: Separating FTX files to be single only means they are easier to handle long term (i.e.: instead of each `<progname>.ftx.gz` having two columns, one for the ground truth and one for the output, create a `groundtruth.ftx.gz` and `<progname>.ftx.gz`.)
+			- This is for the sake of saving space by cutting redundant information, as well as allowing for a more modular and nimble analysis pipline down the road
