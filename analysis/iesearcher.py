@@ -1,4 +1,4 @@
-from korflab import getfp, GFF, readgff
+import korflab
 import sys
 
 """
@@ -22,14 +22,16 @@ Then, run SABR on human genome data.
 
 """
 
-gffile = sys.argv[1]
-ielen = int(sys.argv[2])
+fafile = sys.argv[1]
+gffile = sys.argv[2]
+ielen = int(sys.argv[3])
 
 
 currgene = None
 found = False
 
-for gffline in readgff(gffile):
+"""
+for gffline in korflab.readgff(gffile):
 	if gffline.type == 'gene':
 		found = False
 		#attribs = {att.split('=')[0]: att.split('=')[1] for att in gffline.attr.rstrip().split(';')}
@@ -46,4 +48,6 @@ for gffline in readgff(gffile):
 			print(currgene)
 
 		print(gffline)
+"""
 
+korflab.create_database("genome.db", fafile, gffile)

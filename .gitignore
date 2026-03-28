@@ -188,3 +188,4 @@ softlinks/
 genome.fa
 reads.fa
 *.sam
+*.db
