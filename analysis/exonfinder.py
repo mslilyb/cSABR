@@ -2,7 +2,7 @@ import os
 import sys
 import korflab
 
-if len(sys.argv) != 3: sys.exit(f'usage: {sys.argv[0]} <fasta> <gff3>')
+if len(sys.argv) < 3: sys.exit(f'usage: {sys.argv[0]} <fasta> <gff3>')
 if len(sys.argv) != 4: tag = 'mRNA'
 else: tag = 'transcript'
 if not os.path.exists('genome.db'):
