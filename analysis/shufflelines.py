@@ -22,7 +22,7 @@ with files.getfp(ftx_file) as infp:
 for linenum in reversed(range(len(filelines))):
 	swapout = filelines[linenum]
 
-	if linenum -1 < 0:
+	if linenum - 1 < 0:
 		swapin = 0
 
 	else:
