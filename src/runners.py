@@ -292,7 +292,7 @@ class Run:
 		if not self.Arguments.dry:
 			with files.getfp(self.Arguments.dna) as f_in:
 				with open(newfastap, 'wt') as f_out:
-					shutil.copyfileobj(f_in, f_out)
+					shutil.copyfileobj(f_in, f_out) # yes this just copies it, but it also makes it so I can have a constant name for the genome file
 		
 		logging.info(f'Generating {newreadsp}')
 		if not self.Arguments.dry:
