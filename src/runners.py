@@ -21,7 +21,7 @@ READSFILE = "reads.fa"
 
 
 # List of all programs to be used in the bakeoff
-configfp = open("src/00CONFIG.json")
+configfp = open("/home/spindle/Code/cSABR/src/00CONFIG.json")
 BAKEPROGS = json.load(configfp)
 
 ###########
@@ -268,7 +268,7 @@ class Run:
 	# Private methods
 	def _makeprogs(self):
 		if self.Arguments.programs == 'all':
-			plist = BAKEPROGS.keys()
+			plist = list(BAKEPROGS.keys())
 		else:
 			plist = watchdogs.verifyprograms(self.Arguments.programs, BAKEPROGS)
 		

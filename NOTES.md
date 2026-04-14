@@ -69,6 +69,9 @@ zcat ../softlinks/generated/gencode49_primary_shortIE.gff3.gz | grep -w "gene" |
 However, there may be genes where the first exon does not share a start coordinate with the gene itself. Rather than search all genes by hand to 
 determine this, I instead focused on creating 'transcripts' of each gene with every exon, then discarding the first and last ones.
 
+### Next steps:
+
+
  
 ## Notes on Random Builds
 

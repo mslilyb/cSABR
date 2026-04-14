@@ -49,7 +49,8 @@ def cleanup(odir: str, readfile: str, genomfile: str) -> None:
 	datafiles = [readfile, genomfile]
 	with os.scandir(os.path.abspath(odir)) as builddir:
 		for file in builddir:
-			is_file_target = file.is_file() and file.name not in datafiles and not file.name.endswith('ftx.gz')
+			is_file_target = file.is_file() and file.name not in datafiles and not file.name.endswith('ftx.gz') \
+			and not file.name.endswith('.fa') and not file.name.endswith('.ftx')
 			is_dir_target = file.is_dir()
 			if is_file_target:
 				os.unlink(file.path)

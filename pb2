@@ -100,7 +100,8 @@ if args.d:
 	sys.settrace()
 '''
 # Init output directory
-os.makedirs(args.dir, exist_ok=True)
+if not os.path.isdir(args.dir):
+	os.makedirs(args.dir)
 
 # Create Run object
 

@@ -88,7 +88,6 @@ if arg.double: strands.append('-')
 fa = open(f'{arg.name}.fa', 'w')
 fx = open(f'{arg.name}.ftx', 'w')
 
-random_spots(arg.emin, arg.emax, arg.estep)
 
 # MAIN LOOP
 

@@ -1,16 +1,16 @@
 {
     "bbmap": {
         "name": "bbmap",
-        "cli": "apptainer run --bind ./{odir}:/mnt sifs/bbmap.sif in=/mnt/{reads} ref=/mnt/{genome} nodisk=t threads={thr} out=/mnt/tmp--bbmap",
+        "cli": "apptainer run --bind {odir}:/mnt sifs/bbmap.sif in=/mnt/{reads} ref=/mnt/{genome} nodisk=t threads={thr} out=/mnt/tmp--bbmap",
         "init": {},
         "reqs": []
     },
     "bowtie2": {
         "name": "bowtie2",
-        "cli": "apptainer run --bind ./{odir}:/mnt sifs/bowtie2.sif -x /mnt/{genome} -U /mnt/{fastq} -k 5 > ./{odir}/tmp--bowtie2",
+        "cli": "apptainer run --bind {odir}:/mnt sifs/bowtie2.sif -x /mnt/{genome} -U /mnt/{fastq} -k 5 > {odir}/tmp--bowtie2",
         "init": {
             "file_exists": {
-                "{genome}.1.bt2": "apptainer exec --bind ./{odir}:/mnt sifs/bowtie2.sif /align/bowtie2-build /mnt/{genome} /mnt/{genome}"
+                "{genome}.1.bt2": "apptainer exec --bind {odir}:/mnt sifs/bowtie2.sif /align/bowtie2-build /mnt/{genome} /mnt/{genome}"
             },
             "need_format": "fastq"
         },
@@ -18,72 +18,72 @@
     },
     "gem3-mapper": {
         "name": "gem3-mapper",
-        "cli": "apptainer run --bind ./{odir}:/mnt sifs/gem3-mapper.sif -I /mnt/{genome}.gem -i /mnt/{reads} -t {thr} > ./{odir}/tmp--gem3-mapper",
+        "cli": "apptainer run --bind {odir}:/mnt sifs/gem3-mapper.sif -I /mnt/{genome}.gem -i /mnt/{reads} -t {thr} > {odir}/tmp--gem3-mapper",
         "init": {
             "file_exists": {
-                "{genome}.gem": "apptainer exec --bind ./{odir}:/mnt sifs/gem3-mapper.sif /align/bin/gem-indexer -i /mnt/{genome} -o /mnt/{genome}"
+                "{genome}.gem": "apptainer exec --bind {odir}:/mnt sifs/gem3-mapper.sif /align/bin/gem-indexer -i /mnt/{genome} -o /mnt/{genome}"
             }
         },
         "reqs": []
     },
     "hisat2": {
         "name": "hisat2",
-        "cli": "apptainer run --bind ./{odir}:/mnt sifs/hisat2.sif -x /mnt/{genome} -U /mnt/{reads} -f -p {thr} > ./{odir}/tmp--hisat2",
+        "cli": "apptainer run --bind {odir}:/mnt sifs/hisat2.sif -x /mnt/{genome} -U /mnt/{reads} -f -p {thr} > {odir}/tmp--hisat2",
         "init": {
             "file_exists": {
-                "{genome}.1.ht2": "apptainer exec --bind ./{odir}:/mnt sifs/hisat2.sif /align/hisat2-build -f /mnt/{genome} /mnt/{genome}"
+                "{genome}.1.ht2": "apptainer exec --bind {odir}:/mnt sifs/hisat2.sif /align/hisat2-build -f /mnt/{genome} /mnt/{genome}"
             }
         },
         "reqs": []
     },
     "magicblast": {
         "name": "magicblast",
-        "cli": "apptainer run --bind ./{odir}:/mnt sifs/magicblast.sif -db /mnt/{genome} -query /mnt/{reads} -num_threads {thr} > ./{odir}/tmp--magicblast",
+        "cli": "apptainer run --bind {odir}:/mnt sifs/magicblast.sif -db /mnt/{genome} -query /mnt/{reads} -num_threads {thr} > {odir}/tmp--magicblast",
         "init": {
             "file_exists": {
-                "{genome}.nsq": "apptainer exec --bind ./{odir}:/mnt sifs/magicblast.sif /align/bin/makeblastdb -dbtype nucl -in /mnt/{genome}"
+                "{genome}.nsq": "apptainer exec --bind {odir}:/mnt sifs/magicblast.sif /align/bin/makeblastdb -dbtype nucl -in /mnt/{genome}"
             }
         },
         "reqs": []
     },
     "minimap2": {
         "name": "minimap2",
-        "cli": "apptainer run --bind ./{odir}:/mnt sifs/minimap2.sif -ax splice /mnt/{genome} /mnt/{reads} -t {thr} > ./{odir}/tmp--minimap2",
+        "cli": "apptainer run --bind {odir}:/mnt sifs/minimap2.sif -ax splice /mnt/{genome} /mnt/{reads} -t {thr} > {odir}/tmp--minimap2",
         "init": {},
         "reqs": []
     },
     "pblat": {
         "name": "pblat",
-        "cli": "apptainer run --bind ./{odir}:/mnt sifs/pblat.sif /mnt/{genome} /mnt/{reads} /mnt/tmp--pblat -threads={thr} -out=sim4",
+        "cli": "apptainer run --bind {odir}:/mnt sifs/pblat.sif /mnt/{genome} /mnt/{reads} /mnt/tmp--pblat -threads={thr} -out=sim4",
         "init": {},
         "reqs": []
     },
     "segemehl": {
         "name": "segemehl",
-        "cli": "apptainer run --bind ./{odir}:/mnt sifs/segemehl.sif -d /mnt/{genome} -i /mnt/{genome}.idx -q /mnt/{reads} -t {thr} --splits -o /mnt/tmp--segemehl",
+        "cli": "apptainer run --bind {odir}:/mnt sifs/segemehl.sif -d /mnt/{genome} -i /mnt/{genome}.idx -q /mnt/{reads} -t {thr} --splits -o /mnt/tmp--segemehl",
         "init": {
             "file_exists": {
-                "{genome}.idx": "apptainer run --bind ./{odir}:/mnt sifs/segemehl.sif -x /mnt/{genome}.idx -d /mnt/{genome}"
+                "{genome}.idx": "apptainer run --bind {odir}:/mnt sifs/segemehl.sif -x /mnt/{genome}.idx -d /mnt/{genome}"
             }
         },
         "reqs": []
     },
     "STAR": {
         "name": "STAR",
-        "cli": "apptainer run --bind ./{odir}:/mnt sifs/STAR.sif --genomeDir /mnt/{genome}--star --readFilesIn /mnt/{reads} --readFilesCommand 'cat' --outFileNamePrefix /mnt/tmp--STAR/ --runThreadN 1",
+        "cli": "apptainer run --bind {odir}:/mnt sifs/STAR.sif --genomeDir /mnt/{genome}--star --readFilesIn /mnt/{reads} --readFilesCommand 'cat' --outFileNamePrefix /mnt/tmp--STAR/ --runThreadN 1",
         "init": {
             "file_exists": {
-                "{genome}--star": "apptainer run --bind ./{odir}:/mnt sifs/STAR.sif --runMode genomeGenerate --genomeDir /mnt/{genome}--star --genomeFastaFiles /mnt/{genome} --genomeSAindexNbases 8 --outFileNamePrefix /mnt/"
+                "{genome}--star": "apptainer run --bind {odir}:/mnt sifs/STAR.sif --runMode genomeGenerate --genomeDir /mnt/{genome}--star --genomeFastaFiles /mnt/{genome} --genomeSAindexNbases 8 --outFileNamePrefix /mnt/"
             }
         },
         "reqs": []
     },
     "subread": {
         "name": "subread",
-        "cli": "apptainer exec --bind ./{odir}:/mnt sifs/subread.sif subjunc -i /mnt/{genome} -r /mnt/{reads} --SAMoutput --multiMapping -B 5 -T {thr} -o /mnt/tmp--subread",
+        "cli": "apptainer exec --bind {odir}:/mnt sifs/subread.sif subjunc -i /mnt/{genome} -r /mnt/{reads} --SAMoutput --multiMapping -B 5 -T {thr} -o /mnt/tmp--subread",
         "init": {
             "file_exists": {
-                "{genome}.00.b.tab": "apptainer exec --bind ./{odir}:/mnt sifs/subread.sif subread-buildindex -o /mnt/{genome} /mnt/{genome}"
+                "{genome}.00.b.tab": "apptainer exec --bind {odir}:/mnt sifs/subread.sif subread-buildindex -o /mnt/{genome} /mnt/{genome}"
             }
         },
         "reqs": []
