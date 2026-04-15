@@ -121,7 +121,6 @@ def needfastq(readfile:str) -> str:
 	if not os.path.exists(fastq):
 		with gzip.open(fastq, 'wt') as fp:
 			for name, seq in readfasta(readfile):
-				print(name,seq)
 				print('@', name, file=fp, sep='')
 				print(seq, file=fp)
 				print('+', file=fp)
@@ -135,8 +134,6 @@ def needfastq(readfile:str) -> str:
 
 def needfasta(readfile:str) -> str:
 	uzipfa = readfile[:-3]
-	statement = not os.path.exists(uzipfa)
-	print(statement)
 	if not os.path.exists(uzipfa):
 		os.system(f'gunzip -k {readfile}')
 	return uzipfa
