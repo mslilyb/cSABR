@@ -102,3 +102,9 @@ for dir in `ls -A .`; do mkdir -p `pwd`/$dir/reads/double `pwd`/$dir/reads/plus 
 #oh it got worse
 for dir in `ls -A .`; do for sdir in `ls -A ./$dir/reads`; do mkdir -p ./$dir/reads/$sdir/results; for file in `find ./$dir/reads/$sdir -maxdepth 1 -type f`; do python3 ../../build_full/reads/accfinder.py $file ./$dir/reads/$sdir/ > ./$dir/reads/$sdir/results/`echo $file | cut -f1 -d '_'`.results ; done; done; done;
 ```
+
+```bash
+#and again i say...
+for dir in `ls -A .`; do for progname in `ls -A ~/DATA/generated/csvs/`; do for file in `find $dir -type f -name "*.gz"`; do ~/Code/FToolboX/src/ftbx $file > ~/DATA/generated/csvs/$progname/$progname.$dir.csv; done; done; done
+#awful
+```
