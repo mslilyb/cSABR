@@ -8,7 +8,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('fasta', help='fasta file, compressed ok')
 parser.add_argument('gff', help='gff file, compressed ok')
 parser.add_argument('--developer', action='store_true')
-parser.add_argument('--seed', type=int, default=1)
 arg = parser.parse_args()
 
 if not arg.developer:

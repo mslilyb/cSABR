@@ -108,3 +108,8 @@ for dir in `ls -A .`; do for sdir in `ls -A ./$dir/reads`; do mkdir -p ./$dir/re
 for dir in `ls -A .`; do for progname in `ls -A ~/DATA/generated/csvs/`; do for file in `find $dir -type f -name "*.gz"`; do ~/Code/FToolboX/src/ftbx $file > ~/DATA/generated/csvs/$progname/$progname.$dir.csv; done; done; done
 #awful
 ```
+
+```bash
+# home version
+for dir in `ls -A .`; do for progname in `ls -A ~/results/csvs`; do for file in `find $dir -type f -name "*.gz`; do ~/Code/FToolboX/src/ftbx $file | gzip > ~/results/csvs/$progname/$progname.$dir.csv.gz; done; done; done
+```
