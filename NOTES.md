@@ -91,6 +91,14 @@ Using a fixed length of 50 for internal exons, tested effects of random genome o
 Seed = 1, mexon_len = 50
 
 
+
+### TODO for the analysis:
+
+- take the coverages that exist and compute two numbers, one as coverage and the other as 'hallucination', which represents the amount an aligner made up. this can be calculated as 1 - (# of bases that belong in an alignment/ # of bases that are in the alignment)
+- eliminate the `err_typ` column
+- rerun the csv creation script
+
+
 ```bash
 # saving this for posterity
 for dir in `ls -A .`; do mkdir -p `pwd`/$dir/reads/double `pwd`/$dir/reads/plus `pwd`/$dir/reads/minus; python3 ../../build_full/ftxparse.py ./$dir/build/ double; mv *.tsv ./$dir/reads/double/; python3 ../../build_full/ftxparse.py ./dir/$build/ +; mv *.tsv ./$dir/reads/plus; python3 ../../build_full/ftxparse.py ./$dir/build/ -; mv *.tsv ./$dir/reads/minus; done
