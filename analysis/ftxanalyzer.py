@@ -21,20 +21,14 @@ Current goals:
 thought: need to keep track of names and it is enough for now to realize this: that you need to sleep earlier and get to campus with more time before having to go home to feed nori.
 """
 def accfinder(ec, gc, cs):
-  errtyp = ''
+  #errtyp = ''
   shift = None
 
   if len(gc) < len(ec):
-    errtyp += 'false_splice'
-    if cs == 'unspliced': return errtyp, coverage(ec, gc)
+    #errtyp += 'false_splice'
+    if cs == 'unspliced': return find_detect_and_hallu(ec, gc)
   
-  elif len(gc) > len(ec):
-    errtyp += 'missed_splice'
-
-  else:
-    errtyp += 'n/a'
-
-  return errtyp, coverage(ec, gc)
+  return find_detect_and_hallu(ec, gc)
 
   # to add later LATER DAMMIT: is it truncated or shifted? In what direction?
 
@@ -54,22 +48,40 @@ def casefinder(coords, rl):
 def coordfinder(pair):
   return int(pair.split('-')[0]), int(pair.split('-')[1])
 
-def coverage(ex, gt):
+def find_detect_and_hallu(ex, gt):
   hits = 0
-  totlen = 0
+  totglen = 0
+  totelen = 0
 
+  # find lengths
+  for g in gt:
+    totglen += lenfinder(g)
+
+  for e in ex:
+    totelen += lenfinder(e)
+
+  # find number of correctly alignemd bases
+  #print(gt)
+  #print(ex)
   for g in gt:
     g_beg, g_end = coordfinder(g)
-    totlen += lenfinder(g)
-
+    #print(g_beg, g_end)
+  
     for e in ex:
       e_beg, e_end = coordfinder(e)
+      #print(e_beg, e_end)
 
       for i in range(g_beg, g_end + 1):
         if i >= e_beg and i <= e_end:
-          hits += 1
+          hits += 1 
 
-  return hits / totlen
+  # determine hallucination
+  hal = 1 - (hits / totelen)
+  if hal <= 0:
+    hal = 0
+
+  #print(hits/totglen, hal, totglen, totelen)
+  return hits/totglen, hal
 
 def gapfinder(coords):
   if lenfinder(coords[-1]) > lenfinder(coords[0]):
@@ -117,7 +129,8 @@ o_typs = []
 o_lens = []
 iesizes = []
 warns = []
-covs = []
+dets = []
+hallus = []
 e_typs = []
 # msa_fams = {}
 
@@ -184,10 +197,10 @@ with files.getfp(file) as fp:
       o_typs.append(o_typ)
       o_lens.append(o_len)
 
-      etyp, cov = accfinder(gtcrds, ecrds, case)
+      det, hallu = accfinder(ecrds, gtcrds, case)
 
-      covs.append(cov)
-      e_typs.append(etyp)
+      dets.append(det)
+      hallus.append(hallu)
 
       if not warn_needed:
         warns.append("-")
@@ -212,8 +225,8 @@ assert(len(gtnames) == len(warns))
 
 # Output
 
-print("gt_read", "gt_chrom", "gt_strand", "gt_coords", "ie_size", "case", "ex_read", "ex_chrom", "ex_strand", "ex_coords", "oh_type", "oh_len", "coverage", "err_typ", sep=',')
+print("gt_read", "gt_chrom", "gt_strand", "gt_coords", "ie_size", "case", "ex_read", "ex_chrom", "ex_strand", "ex_coords", "oh_type", "oh_len", "detection", "hallucination", sep=',')
 
 
 for i in range(len(gtnames)):
-  print(gtnames[i], chroms[i], strands[i], gt_coords[i], iesizes[i], cases[i], exp_name[i], exp_chroms[i], exp_strands[i],  exp_coords[i], o_typs[i], o_lens[i], covs[i], e_typs[i], sep=',')
+  print(gtnames[i], chroms[i], strands[i], gt_coords[i], iesizes[i], cases[i], exp_name[i], exp_chroms[i], exp_strands[i],  exp_coords[i], o_typs[i], o_lens[i], dets[i], hallus[i], sep=',')
