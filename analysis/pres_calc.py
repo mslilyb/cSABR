@@ -1,11 +1,22 @@
 import files
+import glob
+import statistics
 import sys
 
-file = sys.argv[1]
-prestot = 0
-linetot = 0
+direc = sys.argv[1]
 
-with files.getfp(file) as fp:
-	for line in fp:
-		pr = line.rstrip().split(',')[12]
-		print(pr)
+for file in sorted(glob.glob(f'{direc}/*.csv*')):
+	title = True
+	precs = []
+	linetot = 0
+	
+	with files.getfp(file) as fp:
+		for line in fp:
+			if title:
+				title = False
+				continue
+
+			precs.append(float(line.rstrip().split(',')[12]))
+			linetot += 1
+
+		print(f'{statistics.mean(precs)},{statistics.stdev(precs)},{statistics.median(precs)},{linetot}')
