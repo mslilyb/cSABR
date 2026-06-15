@@ -81,7 +81,7 @@ def find_detect_and_hallu(ex, gt):
     hal = 0
 
   #print(hits/totglen, hal, totglen, totelen)
-  return hits/totglen, hal
+  return hits/totelen, hal
 
 def gapfinder(coords):
   if lenfinder(coords[-1]) > lenfinder(coords[0]):
@@ -225,7 +225,7 @@ assert(len(gtnames) == len(warns))
 
 # Output
 
-print("gt_read", "gt_chrom", "gt_strand", "gt_coords", "ie_size", "case", "ex_read", "ex_chrom", "ex_strand", "ex_coords", "oh_type", "oh_len", "detection", "hallucination", sep=',')
+print("gt_read", "gt_chrom", "gt_strand", "gt_coords", "ie_size", "case", "ex_read", "ex_chrom", "ex_strand", "ex_coords", "oh_type", "oh_len", "pres", "FDR", sep=',')
 
 
 for i in range(len(gtnames)):
