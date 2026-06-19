@@ -68,7 +68,7 @@ for file in sorted(glob.glob(f'{direc}/*.csv*')):
 				print(f'threep,{i},{statistics.mean(threeps[i])},{statistics.stdev(threeps[i])},{len(threeps[i])}')
 
 			if in_fivep:
-				print(f'fivep',{i},{statistics.mean(fiveps[i])},{statistics.stdev(fiveps[i])},{len(fiveps[i])})
+				print(f'fivep,{i},{statistics.mean(fiveps[i])},{statistics.stdev(fiveps[i])},{len(fiveps[i])}')
 
 			if in_equal:
 				print(f'equal,{i},{statistics.mean(equals[i])},{statistics.stdev(equals[i])},{len(equals[i])}')
