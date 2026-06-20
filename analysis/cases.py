@@ -20,7 +20,7 @@ for file in sorted(glob.glob(f'{direc}/*.csv*')):
 				prec_ind = entry.index('pres')
 				continue
 
-			case = line.rstrip().split(',')[case_ind]
+			case = entry[case_ind]
 
 			if case not in cases:
 				cases[case] = []
@@ -28,4 +28,4 @@ for file in sorted(glob.glob(f'{direc}/*.csv*')):
 			cases[case].append(float(entry[prec_ind]))
 
 		for case in cases.keys():
-			print(f'{case},{statistics.mean(cases[case])},{statistics.stdev(cases[case])},{len(cases[case])}')
+			print(f'{case},{statistics.mean(cases[case])},{statistics.stdev(cases[case])},{len(cases[case])}')		
