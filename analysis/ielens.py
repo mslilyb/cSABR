@@ -65,5 +65,11 @@ for file in sorted(glob.glob(f'{direc}/*.csv*')):
 				equals[ielen].append(prec)
 
 		for i in range(ie_max):
-			if i in ies.keys():
-				print(f'all,{i}')
+			if i in ies:
+				print(f'all,{i},{statistics.mean(ies[i])},{statistics.stdev(ies[i])},{len(ies[i])}')
+			if i in threeps:
+				print(f'all,{i},{statistics.mean(threeps[i])},{statistics.stdev(threeps[i])},{len(threeps[i])}')
+			if i in fiveps:
+				print(f'all,{i},{statistics.mean(fiveps[i])},{statistics.stdev(fiveps[i])},{len(fiveps[i])}')
+			if i in equals:
+				print(f'all,{i},{statistics.mean(equals[i])},{statistics.stdev(equals[i])},{len(equals[i])}')
