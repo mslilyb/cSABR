@@ -189,3 +189,4 @@ genome.fa
 reads.fa
 *.sam
 *.db
+analysis/build_full/
