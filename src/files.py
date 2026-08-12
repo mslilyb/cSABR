@@ -24,12 +24,12 @@ sbf = TypeVar('sbf', bound='SAMbitflag')
 
 def cigar_to_exons(cigar, pos) -> list:
 	"""converts cigar strings to exon coorinates"""
-	exons = []
-	beg = 0
-	end = 0
+	exons: list[tuple] = []
+	beg: int = 0
+	end: int = 0
 	for match in re.finditer(r'(\d+)([\D])', cigar):
-		n = int(match.group(1))
-		op = match.group(2)
+		n: int = int(match.group(1))
+		op: str = match.group(2)
 		if   op == 'M': end += n
 		elif op == '=': end += n
 		elif op == 'X': end += n
@@ -39,14 +39,16 @@ def cigar_to_exons(cigar, pos) -> list:
 		elif op == 'H': pass
 		elif op == 'N':
 			exons.append((pos+beg-1, pos+end-2))
-			beg = end + n
-			end = beg
+			beg: int = end + n
+			end: int = beg
 	exons.append((pos+beg-1, pos+end-2))
+
 	return exons
 
 
 def cleanup(odir: str, readfile: str, genomfile: str) -> None:
-	datafiles = [readfile, genomfile]
+	"""Removes temporary files from both bakeoff and aligners after completion"""
+	datafiles: tuple[str] = [readfile, genomfile]
 	with os.scandir(os.path.abspath(odir)) as builddir:
 		for file in builddir:
 			is_file_target = file.is_file() and file.name not in datafiles and not file.name.endswith('ftx.gz') \
@@ -202,6 +204,7 @@ def sam_to_ftx(filename) -> Generator[tuple, None, None]:
 		for line in fp:
 			if line == '': break
 			if line.startswith('@'): continue
+
 			f = line.split('\t')
 			qname = f[0]
 			bf = SAMbitflag(f[1])
@@ -210,12 +213,15 @@ def sam_to_ftx(filename) -> Generator[tuple, None, None]:
 			cigar = f[5]
 
 			st = '-' if bf.read_reverse_strand else '+'
+
 			if bf.read_unmapped: continue
 			if bf.otherflags:
 				print(bf.otherflags)
 				sys.exit('unexpected flags found, debug me')
 			n += 1
+			
 			exons = cigar_to_exons(cigar, pos)
+			
 			yield FTX(chrom, str(n), st, exons, f'~{qname}')
 
 
@@ -303,17 +309,21 @@ def simulatereads(fasta: str, ftx: str, seed: int, rlen: int = 100,
 		random.seed(seed)
 
 	if outf != None:
-		out = open(outf, 'w')
+		out: TextIOWrapper = open(outf, 'w')
+
 	for cname, cseq, gtfxs in genmaker(fasta, ftx):
+		
 		for gftx in gtfxs:
 			if random.random() > samplegenes: continue
 			genes += 1
+		
 			for rftx, rseq in generate_reads(gftx, cseq, rlen):
 				if random.random() < samplereads:
 					print('>', rftx, '+', sep='', file=out)
 					print(rseq, file=out)
 					reads += 1
 					bases += rlen
+		
 				if double and random.random() < samplereads:
 					rseq = tools.anti(rseq)
 					print('>', rftx, '-', sep='', file=out)
@@ -338,9 +348,31 @@ Spec to follow. Credit to Dr. Ian Korf.
 """
 
 class FTX:
-	"""class to represent transcripts with one-line formatting"""
+	"""
+	Class to represent transcripts with one-line formatting. Each object contains a single read
+	and its data, including location, exons, and any information from the source file.
 
-	def __init__(self, chrom, name, strand, exons, info):
+	An FTX entry should be able to interpret and convert RNAseq read data into its own format.
+
+	Also contains methods to characterize data, finding overlaps, matches, and more. These should
+	be spun off into their own functions, as they outstrip the scope of an individual object.
+	"""
+
+	# Dunders
+	def __init__(self, chrom, name, strand, exons, info) -> None:
+		"""
+		Parameters
+		----------
+
+		+ chrom 	`str`	chromosome where read is located
+		+ beg		`int`	read start coordinate, always in relation to the plus strand
+		+ end		`int`	read end coordinate, always in relation to the plus strand
+		+ name 		`str` 	
+		+ strand
+		+ exons
+		+ info
+
+		"""
 		# sanity checks
 		assert('|' not in chrom)
 		assert(' ' not in chrom)

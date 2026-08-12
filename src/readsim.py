@@ -10,11 +10,14 @@ from typing import Generator
 # FUNCTIONS #
 #############
 
-#
+"""
 def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
+	# Implementation of generator yielding a read's ftx entry and the read itself. Deprecated.
+
 	# create indexes
 	dna: list[int] = [] # dna positional index
 	rna: list[str] = [] # rna sequence
+
 	for beg, end in gftx.exons:
 		for i in range(end - beg + 1):
 			coor = i + beg
@@ -23,36 +26,42 @@ def generate_reads(gftx, chrom, size) -> Generator[tuple, None, None]:
 
 	# generate reads and their ftx annotations
 	for i in range(len(rna) - size + 1):
-		coor = [dna[i+j] for j in range(size)]
-		exons = []
-		beg = coor[0]
-		seen = 0
+		coor: list[int] = [dna[i+j] for j in range(size)]
+		exons: list[tuple] = []
+		beg: int = coor[0]
+		seen: int = 0
+
 		for j in range(size -1):
-			d = coor[j+1] - coor[j]
+			d: int = coor[j+1] - coor[j]
+
 			if d > 1:
-				end = beg + j -seen
+				end: int = beg + j -seen
 				exons.append( (beg, end) )
 				seen += end - beg + 1
-				beg = coor[j+1]
+				beg: int = coor[j+1]
+
 		exons.append( (beg, beg+j -seen +1) )
 		rftx = FTX(gftx.chrom, gftx.name, gftx.strand, exons, 'r')
 		read = ''.join([chrom[beg:end+1] for beg, end in exons])
 
 		yield rftx, read
+"""
 
-# Read simulator.Returns nothing, instead printing the output, default to stdout
-# but a different output file can be specified. Reports run information after
-# completing the simulation to stderr. Do I like this?
-def simreads(fasta, ftx, outfile=None, rlen = 100, gsample=1.0, rsample=1.0, seed=None, double=True):
-	genes = 0
-	reads = 0
-	bases = 0
+def simreads(fasta, ftx, outfile=None, rlen = 100, gsample=1.0, rsample=1.0, seed=None, double=True) -> None:
+	"""
+	Read simulator. Returns None instead printing the output, default to stdout
+	but a different output file can be specified. Reports run information after
+	completing the simulation to stderr. Do I like this?
+	"""
+	genes: int = 0
+	reads: int = 0
+	bases: int = 0
 	if seed != None:
 		random.seed(seed)
 	if outfile != None:
-		out = open(outfile, 'w')
+		out: TextIOWrapper = open(outfile, 'w')
 	else:
-		out = sys.stdout
+		out: TextIOWrapper = sys.stdout
 	for cname, cseq, gtfxs in genmaker(fasta, ftx):
 		for gftx in gtfxs:
 			if random.random() > gsample:
@@ -78,7 +87,6 @@ def simreads(fasta, ftx, outfile=None, rlen = 100, gsample=1.0, rsample=1.0, see
 	if outfile != None:
 		out.close()
 
-	return None
 
 
 ##########

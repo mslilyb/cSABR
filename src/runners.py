@@ -15,18 +15,20 @@ from typing import Generator
 # CONSTANTS #
 #############
 
-GENOMEFILE = "genome.fa"
-FTXFILE = "genome.ftx"
-READSFILE = "reads.fa"
+""" On the chopping block. I don't like that python lets this work."""
+
+GENOMEFILE: str = "genome.fa"
+FTXFILE: str = "genome.ftx"
+READSFILE: str = "reads.fa"
 
 
 # List of all programs to be used in the bakeoff
 configfp = open("/home/spindle/Code/cSABR/src/00CONFIG.json")
 BAKEPROGS = json.load(configfp)
 
-###########
-# CLASSES #
-###########
+####################
+#     CLASSES      #
+####################
 
 ###########
 # PROGRAM #
@@ -151,7 +153,7 @@ class Program:
 
 		self._status['formatted'] = True
 
-	def _makereqs(self, is_dry):
+	def _makereqs(self, is_dry) -> None:
 
 		if self._status['files_created']:
 			return
@@ -197,8 +199,10 @@ class Program:
 		# Generate final output
 		files.reportalignments(READSFILE, ftxfp, self.direc, self.name)
 
+		return result
 
-	def fromdict(self, dic):
+
+	def fromdict(self, dic) -> None:
 		self.name = dic['name']
 		self.cli = dic['cli']
 		self.init = dic['init']
@@ -206,7 +210,7 @@ class Program:
 			self._status['has_init'] = True
 		self.reqs = dic['reqs']
 
-	def initialize(self, is_dry):
+	def initialize(self, is_dry) -> None:
 		# Ensure all strings are formatted
 		self._checks['files_created'](is_dry)
 		self._checks['is_formatted']()
